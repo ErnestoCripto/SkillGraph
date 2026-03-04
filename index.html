@@ -95,6 +95,17 @@
                             <label class="block text-xs font-medium text-slate-500 mb-1">URL Imagen (RAW de GitHub)</label>
                             <input type="text" id="imageUrl" oninput="updatePreview()" placeholder="https://..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
                         </div>
+                        <!-- Nuevos Campos -->
+                        <div class="grid grid-cols-1 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-500 mb-1">Nombre del evento</label>
+                                <input type="text" id="eventName" placeholder="Ej: Stellar Fundamentals" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-500 mb-1">Breve descripción del evento</label>
+                                <textarea id="eventDesc" placeholder="Ej: Insignia otorgada por completar el nivel básico..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none focus:ring-2 focus:ring-purple-500 h-20 resize-none"></textarea>
+                            </div>
+                        </div>
                         <button onclick="mintSBT()" id="mintBtn" class="stellar-gradient w-full py-3 rounded-lg font-bold text-white shadow-lg hover:brightness-110 transition-all flex justify-center items-center mt-4">
                             <span id="btnText">Emitir Insignia</span>
                         </button>
@@ -104,9 +115,9 @@
                 <!-- Bloque de ayuda TOML -->
                 <div id="toml-helper" class="hidden glass-card p-6 rounded-2xl border-emerald-500/30">
                     <h3 class="text-emerald-400 font-bold text-sm mb-2">Paso Final para LOBSTR:</h3>
-                    <p class="text-xs text-slate-300">Asegúrate de que tu archivo <code class="text-purple-400">stellar.toml</code> contenga esto exactamente:</p>
+                    <p class="text-xs text-slate-300">Copia este bloque en tu archivo <code class="text-purple-400">stellar.toml</code>:</p>
                     <div id="toml-code" class="code-block"></div>
-                    <p class="text-[10px] text-slate-400 mt-2 italic">Si después de actualizar el archivo sigues sin ver la imagen, espera 15 minutos a que la cache de LOBSTR expire.</p>
+                    <p class="text-[10px] text-slate-400 mt-2 italic">Actualiza tu repositorio para que los cambios surtan efecto.</p>
                 </div>
             </div>
 
@@ -128,8 +139,8 @@
                     <h4 class="text-[10px] font-bold text-blue-400 uppercase mb-2">¿Sigue sin verse en el móvil?</h4>
                     <ul class="text-[10px] text-slate-400 space-y-2 list-disc pl-3">
                         <li>Verifica que <code class="text-white">.nojekyll</code> exista en el repo principal.</li>
-                        <li>Entra a <code class="text-blue-300">tudominio.com/.well-known/stellar.toml</code> en el navegador de tu móvil. Si no carga ahí, LOBSTR tampoco podrá leerlo.</li>
-                        <li>LOBSTR usa una cache agresiva. Intenta cerrar y abrir la app o desloguearte y volver a entrar.</li>
+                        <li>Entra a <code class="text-blue-300">tudominio.com/.well-known/stellar.toml</code> en el navegador de tu móvil.</li>
+                        <li>LOBSTR usa una cache agresiva. Intenta cerrar y abrir la app.</li>
                     </ul>
                 </div>
             </div>
@@ -232,6 +243,8 @@
             const receiver = document.getElementById('receiverPublic').value.trim().replace(/\s/g, '');
             const code = document.getElementById('assetCode').value.trim();
             const url = formatGithubUrl(document.getElementById('imageUrl').value);
+            const name = document.getElementById('eventName').value.trim() || "Tu insignia";
+            const desc = document.getElementById('eventDesc').value.trim() || "Tu logro";
 
             if (!StellarSdk.StrKey.isValidEd25519SecretSeed(secret)) {
                 log("Error: Llave secreta inválida.", "error");
@@ -244,7 +257,6 @@
                 const account = await server.loadAccount(kp.publicKey());
                 const asset = new StellarSdk.Asset(code, kp.publicKey());
 
-                // Guardamos solo un puntero si la URL es larga, de lo contrario la URL completa
                 let storageValue = url.length > 64 ? `toml:CURRENCIES:${code}` : url;
 
                 log("Emitiendo SBT...");
@@ -268,8 +280,8 @@
                 const res = await server.submitTransaction(tx);
                 log(`¡Éxito! Hash: ${res.hash.substring(0,10)}...`, "success");
 
-                // Generamos bloque TOML limpio
-                const tomlCode = `[[CURRENCIES]]\ncode = "${code}"\nissuer = "${kp.publicKey()}"\ndisplay_decimals = 0\nimage = "${url}"\nname = "${code} SBT"\ndesc = "Certificado Digital Auténtico"`;
+                // Generamos bloque TOML dinámico
+                const tomlCode = `[[CURRENCIES]]\ncode = "${code}"\nissuer = "${kp.publicKey()}"\ndisplay_decimals = 0\nimage = "${url}"\nname = "${name}"\ndesc = "${desc}"`;
                 document.getElementById('toml-code').innerText = tomlCode;
                 document.getElementById('toml-helper').classList.remove('hidden');
 
