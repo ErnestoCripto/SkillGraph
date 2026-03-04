@@ -37,9 +37,9 @@ conditions = "SBT - No transferible"
 
 # Insignia 3: Talk Cripto Monedas
 [[CURRENCIES]]
-code = "CRIPTO01"
+code = "MKT101"
 issuer = "GAVOA6QBBSDKH3NMD2LQIJBXBT3CZPG4CHFGMNDZ4PJ63T7XVK5VKGF6"
 display_decimals = 0
-image = "https://raw.githubusercontent.com/ErnestoCripto/SkillGraph/main/assets/CRIPTO01.png?raw=true"
-name = "Cripto Monedas UTEZ"
-desc = "Reconocimiento por participar en la Talk Cripto Monedas."
+image = "https://raw.githubusercontent.com/ErnestoCripto/SkillGraph/main/assets/MKT101.png?raw=true"
+name = "Talk Cripto"
+desc = "Insignia de Asistencia a la Talk de Cripto en la Universidad"
