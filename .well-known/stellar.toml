@@ -1,0 +1,46 @@
+# --- CONFIGURACIÓN GLOBAL ---
+# El dominio donde está alojado este archivo (sin https://)
+HOME_DOMAIN = "ErnestoCritpo.github.io"
+
+# Cuentas vinculadas a este dominio
+ACCOUNTS = [
+  "GAVOA6QBBSDKH3NMD2LQIJBXBT3CZPG4CHFGMNDZ4PJ63T7XVK5VKGF6" # Tu Public Key Emisora (la misma para todos los assets)
+]
+
+[DOCUMENTATION]
+ORG_NAME = "Skill Graph"
+ORG_URL = "[https://ErnestoCripto.github.io/](https://ErnestoCripto.github.io/SkillGraph)"
+ORG_DESCRIPTION = "Plataforma de emisión de insignias Soulbound (SBT) para diversos cursos y eventos."
+ORG_LOGO = "[https://ErnestoCritpo.github.io/SkillGraph/logo.png](https://ErnestoCripto.github.io/SkillGraph/logo.png)"
+
+# --- LISTA DE INSIGNIAS (CURRENCIES) ---
+
+# Insignia 1: Introducción a Stellar
+[[CURRENCIES]]
+code = "STELLAR101"
+issuer = "GAVOA6QBBSDKH3NMD2LQIJBXBT3CZPG4CHFGMNDZ4PJ63T7XVK5VKGF6"
+display_decimals = 0
+name = "Stellar Fundamentals"
+desc = "Insignia otorgada por completar el nivel básico de Stellar."
+image = "[https://ErnestoCripto.github.io/SkillGraph/assets/stellar101.png](https://ErnestoCripto.github.io/SkillGraph/assets/stellar101.png)"
+conditions = "SBT - No transferible"
+
+# Insignia 2: Bootcamp de Marketing Web3
+[[CURRENCIES]]
+code = "MKT101"
+issuer = "GAVOA6QBBSDKH3NMD2LQIJBXBT3CZPG4CHFGMNDZ4PJ63T7XVK5VKGF6"
+display_decimals = 0
+name = "Marketing Web3 Bootcamp"
+desc = "Certificado de participación en el bootcamp de Marketing Web3."
+image = "[https://ErnestoCripto.github.io/SkillGraph/assets/MKT101.png](https://ErnestoCripto.github.io/SkillGraph/assets/MKT101.png)"
+conditions = "SBT - No transferible"
+
+# Insignia 3: Talk Cripto Monedas UTEZ
+[[CURRENCIES]]
+code = "CRIPTO01"
+issuer = "GAVOA6QBBSDKH3NMD2LQIJBXBT3CZPG4CHFGMNDZ4PJ63T7XVK5VKGF6"
+display_decimals = 0
+name = "Cripto Monedas UTEZ"
+desc = "Reconocimiento por participar en la Talk Cripto Monedas."
+image = "[https://ErnestoCripto.github.io/SkillGraph/assets/CRIPTO01.png](https://ErnestoCripto.github.io/SkillGraph/assets/CRIPTO01.png)"
+conditions = "SBT - No transferible"
