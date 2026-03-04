@@ -1,45 +1,20 @@
 # --- CONFIGURACIÓN GLOBAL ---
-# El dominio donde está alojado este archivo (sin https://)
 HOME_DOMAIN = "ernestocripto.github.io"
 
-# Cuentas vinculadas a este dominio
 ACCOUNTS = [
-  "GAVOA6QBBSDKH3NMD2LQIJBXBT3CZPG4CHFGMNDZ4PJ63T7XVK5VKGF6" # Tu Public Key Emisora (la misma para todos los assets)
+  "GAVOA6QBBSDKH3NMD2LQIJBXBT3CZPG4CHFGMNDZ4PJ63T7XVK5VKGF6"
 ]
 
 [DOCUMENTATION]
 ORG_NAME = "Skill Graph"
-ORG_URL = "[https://ErnestoCripto.github.io/](https://ErnestoCripto.github.io/SkillGraph)"
-ORG_DESCRIPTION = "Plataforma de emisión de insignias Soulbound (SBT) para diversos cursos y eventos."
-ORG_LOGO = "[https://ErnestoCritpo.github.io/SkillGraph/logo.png](https://ErnestoCripto.github.io/SkillGraph/logo.png)"
+ORG_URL = "https://ernestocripto.github.io"
+ORG_DESCRIPTION = "Plataforma de emisión de insignias SBT."
 
-# --- LISTA DE INSIGNIAS (CURRENCIES) ---
-
-# Insignia 1: Introducción a Stellar
-[[CURRENCIES]]
-code = "STELLAR101"
-issuer = "GAVOA6QBBSDKH3NMD2LQIJBXT3CZPG4CHFGMNDZ4PJ63T7XVK5VKGF6"
-display_decimals = 0
-name = "Stellar Fundamentals"
-desc = "Insignia otorgada por completar el nivel basico de Stellar."
-image="https://raw.githubusercontent.com/ErnestoCripto/SkillGraph/main/assets/STELLAR101.png"
-conditions = "SBT - No transferible"
-
-# Insignia 2: Bootcamp de Marketing Web3
 [[CURRENCIES]]
 code = "MKT101"
 issuer = "GAVOA6QBBSDKH3NMD2LQIJBXBT3CZPG4CHFGMNDZ4PJ63T7XVK5VKGF6"
 display_decimals = 0
-name = "Marketing Web3 Bootcamp"
-desc = "Certificado de participación en el bootcamp de Marketing Web3."
-image = "https://ernestocripto.github.io/SkillGraph/assets/MKT101.png"
+name = "Bootcamp de Marketing"
+desc = "Insignia otorgada por completar las 20 horas del bootcamp Marketing para Blockchain"
+image = "https://github.com/ErnestoCripto/SkillGraph/blob/main/assets/MKT101.png?raw=true"
 conditions = "SBT - No transferible"
-
-# Insignia 3: Talk Cripto Monedas
-[[CURRENCIES]]
-code = "MKT101"
-issuer = "GAVOA6QBBSDKH3NMD2LQIJBXBT3CZPG4CHFGMNDZ4PJ63T7XVK5VKGF6"
-display_decimals = 0
-image = "https://raw.githubusercontent.com/ErnestoCripto/SkillGraph/main/assets/MKT101.png?raw=true"
-name = "Talk Cripto"
-desc = "Insignia de Asistencia a la Talk de Cripto en la Universidad"
