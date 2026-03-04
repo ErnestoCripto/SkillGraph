@@ -18,11 +18,11 @@ ORG_LOGO = "[https://ErnestoCritpo.github.io/SkillGraph/logo.png](https://Ernest
 # Insignia 1: Introducción a Stellar
 [[CURRENCIES]]
 code = "STELLAR101"
-issuer = "GAVOA6QBBSDKH3NMD2LQIJBXBT3CZPG4CHFGMNDZ4PJ63T7XVK5VKGF6"
+issuer = "GAVOA6QBBSDKH3NMD2LQIJBXT3CZPG4CHFGMNDZ4PJ63T7XVK5VKGF6"
 display_decimals = 0
 name = "Stellar Fundamentals"
-desc = "Insignia otorgada por completar el nivel básico de Stellar."
-image = "[https://ErnestoCripto.github.io/SkillGraph/assets/stellar101.png](https://ErnestoCripto.github.io/SkillGraph/assets/stellar101.png)"
+desc = "Insignia otorgada por completar el nivel basico de Stellar."
+image = "https://ernestocripto.github.io/SkillGraph/assets/stellar101.png"
 conditions = "SBT - No transferible"
 
 # Insignia 2: Bootcamp de Marketing Web3
@@ -32,7 +32,7 @@ issuer = "GAVOA6QBBSDKH3NMD2LQIJBXBT3CZPG4CHFGMNDZ4PJ63T7XVK5VKGF6"
 display_decimals = 0
 name = "Marketing Web3 Bootcamp"
 desc = "Certificado de participación en el bootcamp de Marketing Web3."
-image = "[https://ErnestoCripto.github.io/SkillGraph/assets/MKT101.png](https://ErnestoCripto.github.io/SkillGraph/assets/MKT101.png)"
+image = "https://ernestocripto.github.io/SkillGraph/assets/MKT101.png"
 conditions = "SBT - No transferible"
 
 # Insignia 3: Talk Cripto Monedas UTEZ
@@ -42,5 +42,5 @@ issuer = "GAVOA6QBBSDKH3NMD2LQIJBXBT3CZPG4CHFGMNDZ4PJ63T7XVK5VKGF6"
 display_decimals = 0
 name = "Cripto Monedas UTEZ"
 desc = "Reconocimiento por participar en la Talk Cripto Monedas."
-image = "[https://ErnestoCripto.github.io/SkillGraph/assets/CRIPTO01.png](https://ErnestoCripto.github.io/SkillGraph/assets/CRIPTO01.png)"
+image = "https://ErnestoCripto.github.io/SkillGraph/assets/CRIPTO01.png"
 conditions = "SBT - No transferible"
