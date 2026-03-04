@@ -20,7 +20,30 @@
         }
         #console-output::-webkit-scrollbar { width: 6px; }
         #console-output::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
-        .code-block { background: #000; color: #10b981; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 11px; margin-top: 10px; border: 1px solid #334155; white-space: pre-wrap; word-break: break-all; }
+        .code-block { 
+            background: #000; 
+            color: #10b981; 
+            padding: 15px; 
+            border-radius: 8px; 
+            font-family: 'Courier New', monospace; 
+            font-size: 13px; 
+            margin-top: 10px; 
+            border: 1px solid #334155; 
+            white-space: pre-wrap; 
+            word-break: break-all;
+            position: relative;
+        }
+        .copy-badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #1e293b;
+            color: #94a3b8;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-8">
@@ -30,7 +53,7 @@
         <header class="flex justify-between items-center mb-10 border-b border-slate-800 pb-6">
             <div>
                 <h1 class="text-3xl font-bold tracking-tight">Stellar <span class="text-purple-400">SBT</span> Manager</h1>
-                <p class="text-slate-400 text-sm">Emisor Profesional para GitHub Pages</p>
+                <p class="text-slate-400 text-sm">Generador de stellar.toml Profesional</p>
             </div>
             <div class="text-right">
                 <span class="bg-purple-900/30 text-purple-400 px-3 py-1 rounded-full text-xs font-bold border border-purple-800">TESTNET</span>
@@ -39,24 +62,19 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            <!-- Panel Izquierdo -->
+            <!-- Panel Izquierdo: Configuración Global -->
             <div class="lg:col-span-4 space-y-6">
-                <div class="glass-card p-6 rounded-2xl shadow-xl">
-                    <h2 class="text-lg font-semibold mb-4 text-white flex items-center">
-                        <svg class="w-5 h-5 mr-2 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                        Identidad del Emisor
-                    </h2>
+                <div class="glass-card p-6 rounded-2xl shadow-xl border-l-4 border-purple-500">
+                    <h2 class="text-lg font-semibold mb-4 text-white">1. Configuración del Emisor</h2>
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-xs font-medium text-slate-500 mb-1">Secret Key (S...)</label>
-                            <input type="password" id="issuerSecret" oninput="derivePublicKey()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all">
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Secret Key del Emisor (S...)</label>
+                            <input type="password" id="issuerSecret" placeholder="S..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-500 mb-1">Home Domain (sin https://)</label>
-                            <div class="flex gap-2">
-                                <input type="text" id="homeDomain" placeholder="tuusuario.github.io" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
-                                <button onclick="setHomeDomain()" class="bg-slate-700 hover:bg-slate-600 px-3 rounded-lg text-xs font-bold transition-colors">Vincular</button>
-                            </div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Tu Dominio de GitHub Pages</label>
+                            <input type="text" id="homeDomain" value="ernestocripto.github.io" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
+                            <button onclick="setHomeDomain()" class="w-full mt-2 bg-slate-700 hover:bg-slate-600 py-2 rounded-lg text-xs font-bold transition-colors">Vincular Dominio en Blockchain</button>
                         </div>
                     </div>
                 </div>
@@ -64,84 +82,77 @@
                 <div class="glass-card p-4 rounded-2xl h-64 flex flex-col">
                     <h3 class="text-xs font-bold text-emerald-400 uppercase mb-2">Logs de Red</h3>
                     <div id="console-output" class="font-mono text-[10px] text-emerald-500/80 flex-1 overflow-y-auto leading-relaxed">
-                        > Sistema inicializado.
+                        > Sistema listo.
                     </div>
                 </div>
             </div>
 
-            <!-- Panel Central -->
+            <!-- Panel Central: Emisión y TOML -->
             <div class="lg:col-span-5 space-y-6">
                 <div class="glass-card p-6 rounded-2xl shadow-xl">
-                    <h2 class="text-lg font-semibold mb-4 text-white flex items-center">
-                        <svg class="w-5 h-5 mr-2 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        Emitir Nueva Insignia
-                    </h2>
+                    <h2 class="text-lg font-semibold mb-4 text-white">2. Datos de la Insignia</h2>
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-xs font-medium text-slate-500 mb-1">Public Key del Receptor (G...)</label>
-                            <input type="text" id="receiverPublic" placeholder="G..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none focus:ring-2 focus:ring-purple-500">
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Receptor (G...)</label>
+                            <input type="text" id="receiverPublic" placeholder="G..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-medium text-slate-500 mb-1">Código (Asset)</label>
-                                <input type="text" id="assetCode" value="STELLAR101" maxlength="12" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
+                                <label class="block text-xs font-medium text-slate-500 mb-1">Código Asset</label>
+                                <input type="text" id="assetCode" value="STELLAR101" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-slate-500 mb-1">Serie / Edición</label>
-                                <input type="text" id="serialNum" value="1/1" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
+                                <label class="block text-xs font-medium text-slate-500 mb-1">Nombre Público</label>
+                                <input type="text" id="eventName" value="Stellar Fundamentals" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
                             </div>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-500 mb-1">URL Imagen (RAW de GitHub)</label>
-                            <input type="text" id="imageUrl" oninput="updatePreview()" placeholder="https://..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
+                            <label class="block text-xs font-medium text-slate-500 mb-1">URL Imagen (Directa/Raw)</label>
+                            <input type="text" id="imageUrl" oninput="updatePreview()" value="https://raw.githubusercontent.com/ErnestoCripto/SkillGraph/main/assets/STELLAR101.png" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white text-xs outline-none">
                         </div>
-                        <!-- Nuevos Campos -->
-                        <div class="grid grid-cols-1 gap-4">
-                            <div>
-                                <label class="block text-xs font-medium text-slate-500 mb-1">Nombre del evento</label>
-                                <input type="text" id="eventName" placeholder="Ej: Stellar Fundamentals" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none focus:ring-2 focus:ring-purple-500">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-500 mb-1">Breve descripción del evento</label>
-                                <textarea id="eventDesc" placeholder="Ej: Insignia otorgada por completar el nivel básico..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none focus:ring-2 focus:ring-purple-500 h-20 resize-none"></textarea>
-                            </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Descripción para LOBSTR</label>
+                            <textarea id="eventDesc" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white text-xs h-16 resize-none">Insignia otorgada por completar el nivel básico de Stellar.</textarea>
                         </div>
-                        <button onclick="mintSBT()" id="mintBtn" class="stellar-gradient w-full py-3 rounded-lg font-bold text-white shadow-lg hover:brightness-110 transition-all flex justify-center items-center mt-4">
-                            <span id="btnText">Emitir Insignia</span>
+
+                        <button onclick="mintSBT()" id="mintBtn" class="stellar-gradient w-full py-3 rounded-lg font-bold text-white shadow-lg hover:brightness-110 transition-all flex justify-center items-center">
+                            Emitir y Generar TOML Limpio
                         </button>
                     </div>
                 </div>
 
-                <!-- Bloque de ayuda TOML -->
-                <div id="toml-helper" class="hidden glass-card p-6 rounded-2xl border-emerald-500/30">
-                    <h3 class="text-emerald-400 font-bold text-sm mb-2">Paso Final para LOBSTR:</h3>
-                    <p class="text-xs text-slate-300">Copia este bloque en tu archivo <code class="text-purple-400">stellar.toml</code>:</p>
-                    <div id="toml-code" class="code-block"></div>
-                    <p class="text-[10px] text-slate-400 mt-2 italic">Actualiza tu repositorio para que los cambios surtan efecto.</p>
+                <!-- Bloque TOML -->
+                <div id="toml-helper" class="hidden glass-card p-6 rounded-2xl border-emerald-500/50 bg-emerald-950/20">
+                    <h3 class="text-emerald-400 font-bold text-sm mb-2 flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Código para tu stellar.toml
+                    </h3>
+                    <p class="text-[10px] text-slate-300 mb-3">Reemplaza TODO el contenido de tu archivo por este (incluyendo la cabecera):</p>
+                    <div class="relative">
+                        <div id="toml-code" class="code-block"></div>
+                        <div class="copy-badge" onclick="copyToml()">Copiar Todo</div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Panel Derecho -->
+            <!-- Panel Derecho: Preview -->
             <div class="lg:col-span-3 space-y-6">
                 <div class="glass-card p-6 rounded-2xl flex flex-col items-center text-center">
-                    <h3 class="text-xs font-bold text-slate-400 uppercase mb-4 w-full text-left border-b border-slate-700 pb-2">Vista Previa</h3>
-                    <div id="preview-container" class="w-full aspect-square bg-slate-900 rounded-xl border-2 border-dashed border-slate-700 flex items-center justify-center overflow-hidden mb-4">
-                        <span id="preview-placeholder" class="text-slate-600 text-[10px] px-4 text-center">Pega una URL para previsualizar</span>
-                        <img id="preview-img" class="hidden w-full h-full object-contain" src="" alt="Preview" onerror="handleImageError()">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase mb-4 w-full text-left">Vista Previa</h3>
+                    <div class="w-full aspect-square bg-slate-900 rounded-xl border border-slate-700 flex items-center justify-center overflow-hidden mb-4 shadow-inner">
+                        <img id="preview-img" class="w-full h-full object-contain p-2" src="https://raw.githubusercontent.com/ErnestoCripto/SkillGraph/main/assets/STELLAR101.png" alt="Preview">
                     </div>
                     <div class="w-full text-left">
-                        <p id="preview-name" class="font-bold text-lg text-white">Asset</p>
-                        <p id="preview-serial" class="text-purple-400 text-sm">Edición --</p>
+                        <p id="preview-name" class="font-bold text-white">STELLAR101</p>
+                        <p class="text-slate-500 text-[10px]">Emitido por: ernestocripto.github.io</p>
                     </div>
                 </div>
 
                 <div class="bg-blue-900/20 border border-blue-800/50 p-4 rounded-xl">
-                    <h4 class="text-[10px] font-bold text-blue-400 uppercase mb-2">¿Sigue sin verse en el móvil?</h4>
-                    <ul class="text-[10px] text-slate-400 space-y-2 list-disc pl-3">
-                        <li>Verifica que <code class="text-white">.nojekyll</code> exista en el repo principal.</li>
-                        <li>Entra a <code class="text-blue-300">tudominio.com/.well-known/stellar.toml</code> en el navegador de tu móvil.</li>
-                        <li>LOBSTR usa una cache agresiva. Intenta cerrar y abrir la app.</li>
-                    </ul>
+                    <h4 class="text-[11px] font-bold text-blue-400 uppercase mb-2">Consejo para LOBSTR</h4>
+                    <p class="text-[10px] text-slate-400 leading-relaxed">
+                        En tus capturas se ven corchetes <code class="text-white">[]</code>. Eso rompe el archivo. Usa el botón "Copiar Todo" de esta app para obtener el formato limpio sin errores de Markdown.
+                    </p>
                 </div>
             </div>
 
@@ -154,70 +165,31 @@
         function log(msg, type = 'info') {
             const consoleEl = document.getElementById('console-output');
             const timestamp = new Date().toLocaleTimeString();
-            const colorClass = type === 'error' ? 'text-red-400 font-bold' : (type === 'success' ? 'text-emerald-400' : 'text-emerald-500/80');
+            const colorClass = type === 'error' ? 'text-red-400' : (type === 'success' ? 'text-emerald-400 font-bold' : 'text-emerald-500/70');
             consoleEl.innerHTML += `<div class="mb-1"><span>[${timestamp}]</span> <span class="${colorClass}">${msg}</span></div>`;
             consoleEl.scrollTop = consoleEl.scrollHeight;
         }
 
-        function handleImageError() {
-            const img = document.getElementById('preview-img');
-            const placeholder = document.getElementById('preview-placeholder');
-            img.classList.add('hidden');
-            placeholder.innerText = "Error: Verifica que la URL termine en .png o .jpg";
-            placeholder.classList.remove('hidden');
-        }
-
-        function formatGithubUrl(url) {
-            if (!url) return "";
-            let cleanUrl = url.trim();
-            if (cleanUrl.includes("github.com") && cleanUrl.includes("/blob/")) {
-                cleanUrl = cleanUrl.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/");
-            }
-            return cleanUrl;
-        }
-
         function updatePreview() {
-            const url = formatGithubUrl(document.getElementById('imageUrl').value);
-            const code = document.getElementById('assetCode').value.trim();
-            const serial = document.getElementById('serialNum').value.trim();
+            const url = document.getElementById('imageUrl').value.trim();
             const img = document.getElementById('preview-img');
-            const placeholder = document.getElementById('preview-placeholder');
-
-            document.getElementById('preview-name').innerText = code || "Asset";
-            document.getElementById('preview-serial').innerText = `Edición ${serial}` || "Edición --";
-
-            if (url) {
-                img.src = url;
-                img.classList.remove('hidden');
-                placeholder.classList.add('hidden');
-            } else {
-                img.classList.add('hidden');
-                placeholder.classList.remove('hidden');
-            }
-        }
-
-        function derivePublicKey() {
-            const secret = document.getElementById('issuerSecret').value.trim();
-            try {
-                if (StellarSdk.StrKey.isValidEd25519SecretSeed(secret)) {
-                    const kp = StellarSdk.Keypair.fromSecret(secret);
-                    log(`Llave pública detectada: ${kp.publicKey().substring(0,8)}...`);
-                }
-            } catch (e) {}
+            img.src = url;
+            document.getElementById('preview-name').innerText = document.getElementById('assetCode').value;
         }
 
         async function setHomeDomain() {
             let secret = document.getElementById('issuerSecret').value.trim();
             let domain = document.getElementById('homeDomain').value.trim();
-            domain = domain.replace(/^https?:\/\//, '').split('/')[0];
-
+            
+            domain = domain.replace(/^https?:\/\//, '').replace(/\/$/, '').split('/')[0].trim();
+            
             if (!StellarSdk.StrKey.isValidEd25519SecretSeed(secret)) {
-                log("Error: Llave secreta necesaria.", "error");
+                log("Error: Secret Key no válida.", "error");
                 return;
             }
 
             try {
-                log(`Estableciendo HOME_DOMAIN: ${domain}...`);
+                log(`Vinculando dominio: ${domain}...`);
                 const kp = StellarSdk.Keypair.fromSecret(secret);
                 const account = await server.loadAccount(kp.publicKey());
                 
@@ -231,25 +203,24 @@
 
                 tx.sign(kp);
                 await server.submitTransaction(tx);
-                log("¡Dominio vinculado! LOBSTR ya sabe dónde buscar metadatos.", "success");
+                log("¡Dominio vinculado! LOBSTR ya sabe dónde buscar el TOML.", "success");
             } catch (e) {
-                log(`Fallo al vincular: ${e.message}`, "error");
+                log(`Fallo: ${e.message}`, "error");
             }
         }
 
         async function mintSBT() {
             const btn = document.getElementById('mintBtn');
             const secret = document.getElementById('issuerSecret').value.trim();
-            const receiver = document.getElementById('receiverPublic').value.trim().replace(/\s/g, '');
+            const receiver = document.getElementById('receiverPublic').value.trim();
             const code = document.getElementById('assetCode').value.trim();
-            const url = formatGithubUrl(document.getElementById('imageUrl').value);
-            const name = document.getElementById('eventName').value.trim() || "Tu insignia";
-            const desc = document.getElementById('eventDesc').value.trim() || "Tu logro";
+            const url = document.getElementById('imageUrl').value.trim();
+            const name = document.getElementById('eventName').value.trim();
+            const desc = document.getElementById('eventDesc').value.trim();
+            const domain = document.getElementById('homeDomain').value.trim();
 
-            if (!StellarSdk.StrKey.isValidEd25519SecretSeed(secret)) {
-                log("Error: Llave secreta inválida.", "error");
-                return;
-            }
+            if (!StellarSdk.StrKey.isValidEd25519SecretSeed(secret)) { log("Secret Key requerida.", "error"); return; }
+            if (!receiver) { log("Public Key del Receptor requerida.", "error"); return; }
 
             try {
                 btn.disabled = true;
@@ -257,17 +228,11 @@
                 const account = await server.loadAccount(kp.publicKey());
                 const asset = new StellarSdk.Asset(code, kp.publicKey());
 
-                let storageValue = url.length > 64 ? `toml:CURRENCIES:${code}` : url;
-
-                log("Emitiendo SBT...");
+                log(`Emitiendo ${code}...`);
                 const tx = new StellarSdk.TransactionBuilder(account, {
                     fee: StellarSdk.BASE_FEE,
                     networkPassphrase: StellarSdk.Networks.TESTNET
                 })
-                .addOperation(StellarSdk.Operation.manageData({ 
-                    name: `art:${code}`, 
-                    value: storageValue 
-                }))
                 .addOperation(StellarSdk.Operation.createClaimableBalance({
                     asset: asset,
                     amount: "0.0000001",
@@ -277,19 +242,51 @@
                 .build();
 
                 tx.sign(kp);
-                const res = await server.submitTransaction(tx);
-                log(`¡Éxito! Hash: ${res.hash.substring(0,10)}...`, "success");
+                await server.submitTransaction(tx);
+                log("¡Insignia emitida!", "success");
 
-                // Generamos bloque TOML dinámico
-                const tomlCode = `[[CURRENCIES]]\ncode = "${code}"\nissuer = "${kp.publicKey()}"\ndisplay_decimals = 0\nimage = "${url}"\nname = "${name}"\ndesc = "${desc}"`;
-                document.getElementById('toml-code').innerText = tomlCode;
+                // Generar TOML COMPLETO y LIMPIO
+                const tomlText = `# --- CONFIGURACIÓN GLOBAL ---
+HOME_DOMAIN = "${domain}"
+
+ACCOUNTS = [
+  "${kp.publicKey()}"
+]
+
+[DOCUMENTATION]
+ORG_NAME = "Skill Graph"
+ORG_URL = "https://${domain}"
+ORG_DESCRIPTION = "Plataforma de emisión de insignias SBT."
+
+[[CURRENCIES]]
+code = "${code}"
+issuer = "${kp.publicKey()}"
+display_decimals = 0
+name = "${name}"
+desc = "${desc}"
+image = "${url}"
+conditions = "SBT - No transferible"`;
+
+                document.getElementById('toml-code').innerText = tomlText;
                 document.getElementById('toml-helper').classList.remove('hidden');
+                document.getElementById('toml-helper').scrollIntoView({ behavior: 'smooth' });
 
             } catch (e) {
                 log(`Error: ${e.message}`, "error");
             } finally {
                 btn.disabled = false;
             }
+        }
+
+        function copyToml() {
+            const text = document.getElementById('toml-code').innerText;
+            const dummy = document.createElement("textarea");
+            document.body.appendChild(dummy);
+            dummy.value = text;
+            dummy.select();
+            document.execCommand("copy");
+            document.body.removeChild(dummy);
+            log("¡Archivo TOML copiado!", "success");
         }
     </script>
 </body>
