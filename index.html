@@ -92,8 +92,8 @@
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-slate-500 mb-1">URL Imagen (GitHub)</label>
-                            <input type="text" id="imageUrl" oninput="updatePreview()" placeholder="https://raw.githubusercontent.com/..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
-                            <p class="text-[10px] text-slate-500 mt-1 italic">Usa el enlace "Raw" de GitHub para la previsualización.</p>
+                            <input type="text" id="imageUrl" oninput="updatePreview()" placeholder="https://..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
+                            <p class="text-[10px] text-slate-500 mt-1 italic">El sistema ajustará la URL automáticamente para evitar errores.</p>
                         </div>
                         <button onclick="mintSBT()" id="mintBtn" class="stellar-gradient w-full py-3 rounded-lg font-bold text-white shadow-lg hover:brightness-110 transition-all flex justify-center items-center mt-4">
                             <span id="btnText">Emitir Insignia</span>
@@ -107,7 +107,7 @@
                 <div class="glass-card p-6 rounded-2xl flex flex-col items-center text-center">
                     <h3 class="text-xs font-bold text-slate-400 uppercase mb-4 w-full text-left border-b border-slate-700 pb-2">Vista Previa</h3>
                     <div id="preview-container" class="w-full aspect-square bg-slate-900 rounded-xl border-2 border-dashed border-slate-700 flex items-center justify-center overflow-hidden mb-4">
-                        <span id="preview-placeholder" class="text-slate-600 text-[10px] px-4">Introduce una URL válida</span>
+                        <span id="preview-placeholder" class="text-slate-600 text-[10px] px-4 text-center">Pega una URL de GitHub para ver la insignia</span>
                         <img id="preview-img" class="hidden w-full h-full object-contain" src="" alt="Preview" onerror="handleImageError()">
                     </div>
                     <div class="w-full text-left">
@@ -126,7 +126,7 @@
         function log(msg, type = 'info') {
             const consoleEl = document.getElementById('console-output');
             const timestamp = new Date().toLocaleTimeString();
-            const colorClass = type === 'error' ? 'text-red-400' : (type === 'success' ? 'text-emerald-400' : 'text-emerald-500/80');
+            const colorClass = type === 'error' ? 'text-red-400 font-bold' : (type === 'success' ? 'text-emerald-400' : 'text-emerald-500/80');
             consoleEl.innerHTML += `<div class="mb-1"><span>[${timestamp}]</span> <span class="${colorClass}">${msg}</span></div>`;
             consoleEl.scrollTop = consoleEl.scrollHeight;
         }
@@ -135,12 +135,23 @@
             const img = document.getElementById('preview-img');
             const placeholder = document.getElementById('preview-placeholder');
             img.classList.add('hidden');
-            placeholder.innerText = "Error al cargar imagen. Verifica la URL.";
+            placeholder.innerText = "No se pudo cargar la imagen. Revisa que sea un archivo directo (.png, .jpg)";
             placeholder.classList.remove('hidden');
         }
 
+        function formatGithubUrl(url) {
+            if (!url) return "";
+            let cleanUrl = url.trim();
+            // Convertir URL de visualización de GitHub a URL de contenido crudo
+            if (cleanUrl.includes("github.com") && cleanUrl.includes("/blob/")) {
+                cleanUrl = cleanUrl.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/");
+            }
+            return cleanUrl;
+        }
+
         function updatePreview() {
-            let url = document.getElementById('imageUrl').value.trim();
+            const rawUrl = document.getElementById('imageUrl').value;
+            const url = formatGithubUrl(rawUrl);
             const code = document.getElementById('assetCode').value.trim();
             const serial = document.getElementById('serialNum').value.trim();
             const img = document.getElementById('preview-img');
@@ -150,10 +161,6 @@
             document.getElementById('preview-serial').innerText = `Edición ${serial}` || "Edición --";
 
             if (url) {
-                // Corrección automática para URLs de GitHub
-                if (url.includes("github.com") && url.includes("/blob/")) {
-                    url = url.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/");
-                }
                 img.src = url;
                 img.classList.remove('hidden');
                 placeholder.classList.add('hidden');
@@ -168,7 +175,7 @@
             try {
                 if (StellarSdk.StrKey.isValidEd25519SecretSeed(secret)) {
                     const kp = StellarSdk.Keypair.fromSecret(secret);
-                    log(`Cuenta lista: ${kp.publicKey().substring(0,8)}...`);
+                    log(`Llave detectada: ${kp.publicKey().substring(0,8)}...`);
                 }
             } catch (e) {}
         }
@@ -184,7 +191,7 @@
             }
 
             try {
-                log(`Vinculando dominio: ${domain}...`);
+                log(`Sincronizando dominio: ${domain}...`);
                 const kp = StellarSdk.Keypair.fromSecret(secret);
                 const account = await server.loadAccount(kp.publicKey());
                 
@@ -198,9 +205,9 @@
 
                 tx.sign(kp);
                 await server.submitTransaction(tx);
-                log("¡Dominio vinculado con éxito!", "success");
+                log("¡Dominio vinculado correctamente!", "success");
             } catch (e) {
-                log(`Error: ${e.message}`, "error");
+                log(`Fallo: ${e.message}`, "error");
             }
         }
 
@@ -209,10 +216,10 @@
             const secret = document.getElementById('issuerSecret').value.trim();
             const receiver = document.getElementById('receiverPublic').value.trim().replace(/\s/g, '');
             const code = document.getElementById('assetCode').value.trim();
-            const url = document.getElementById('imageUrl').value.trim();
+            const url = formatGithubUrl(document.getElementById('imageUrl').value);
 
             if (!StellarSdk.StrKey.isValidEd25519SecretSeed(secret)) {
-                log("Error: Secret Key inválida.", "error");
+                log("Error: Secret Key necesaria.", "error");
                 return;
             }
 
@@ -222,16 +229,22 @@
                 const account = await server.loadAccount(kp.publicKey());
                 const asset = new StellarSdk.Asset(code, kp.publicKey());
 
-                // Solo guardamos el nombre del archivo si la URL es muy larga para evitar el error de 64 bytes
-                const storageValue = url.length > 60 ? `check_toml:${code}` : url;
+                // SOLUCIÓN AL ERROR DE 64 BYTES:
+                // Si la URL es muy larga, guardamos una referencia corta.
+                // El estándar SBT indica que si no hay URL en ManageData, se busca en el TOML.
+                let storageValue = url;
+                if (url.length > 64) {
+                    log("URL larga detectada. Optimizando para la blockchain...", "info");
+                    storageValue = `toml:${code}`; // Referencia corta
+                }
 
-                log("Preparando transacción...");
+                log("Enviando a la red Stellar...");
                 const tx = new StellarSdk.TransactionBuilder(account, {
                     fee: StellarSdk.BASE_FEE,
                     networkPassphrase: StellarSdk.Networks.TESTNET
                 })
                 .addOperation(StellarSdk.Operation.manageData({ 
-                    name: `ipfs:${code}`, // Cambiado a 'ipfs' o 'art' estandarizado
+                    name: `art:${code}`, 
                     value: storageValue 
                 }))
                 .addOperation(StellarSdk.Operation.createClaimableBalance({
@@ -244,11 +257,12 @@
 
                 tx.sign(kp);
                 const res = await server.submitTransaction(tx);
-                log(`¡Éxito! Hash: ${res.hash.substring(0,10)}...`, "success");
-                log(`Recuerda añadir ${code} a tu stellar.toml`, "info");
+                log(`¡Éxito! Transacción: ${res.hash.substring(0,10)}...`, "success");
             } catch (e) {
-                console.error(e);
                 log(`Error: ${e.message}`, "error");
+                if (e.response && e.response.data && e.response.data.extras) {
+                    console.error(e.response.data.extras.result_codes);
+                }
             } finally {
                 btn.disabled = false;
             }
