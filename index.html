@@ -91,8 +91,9 @@
                             </div>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-500 mb-1">URL Imagen</label>
-                            <input type="text" id="imageUrl" oninput="updatePreview()" placeholder="https://..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
+                            <label class="block text-xs font-medium text-slate-500 mb-1">URL Imagen (GitHub)</label>
+                            <input type="text" id="imageUrl" oninput="updatePreview()" placeholder="https://raw.githubusercontent.com/..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
+                            <p class="text-[10px] text-slate-500 mt-1 italic">Usa el enlace "Raw" de GitHub para la previsualización.</p>
                         </div>
                         <button onclick="mintSBT()" id="mintBtn" class="stellar-gradient w-full py-3 rounded-lg font-bold text-white shadow-lg hover:brightness-110 transition-all flex justify-center items-center mt-4">
                             <span id="btnText">Emitir Insignia</span>
@@ -106,8 +107,8 @@
                 <div class="glass-card p-6 rounded-2xl flex flex-col items-center text-center">
                     <h3 class="text-xs font-bold text-slate-400 uppercase mb-4 w-full text-left border-b border-slate-700 pb-2">Vista Previa</h3>
                     <div id="preview-container" class="w-full aspect-square bg-slate-900 rounded-xl border-2 border-dashed border-slate-700 flex items-center justify-center overflow-hidden mb-4">
-                        <span id="preview-placeholder" class="text-slate-600 text-[10px] px-4">Introduce una URL</span>
-                        <img id="preview-img" class="hidden w-full h-full object-contain" src="" alt="Preview">
+                        <span id="preview-placeholder" class="text-slate-600 text-[10px] px-4">Introduce una URL válida</span>
+                        <img id="preview-img" class="hidden w-full h-full object-contain" src="" alt="Preview" onerror="handleImageError()">
                     </div>
                     <div class="w-full text-left">
                         <p id="preview-name" class="font-bold text-lg text-white">Asset</p>
@@ -130,8 +131,16 @@
             consoleEl.scrollTop = consoleEl.scrollHeight;
         }
 
+        function handleImageError() {
+            const img = document.getElementById('preview-img');
+            const placeholder = document.getElementById('preview-placeholder');
+            img.classList.add('hidden');
+            placeholder.innerText = "Error al cargar imagen. Verifica la URL.";
+            placeholder.classList.remove('hidden');
+        }
+
         function updatePreview() {
-            const url = document.getElementById('imageUrl').value.trim();
+            let url = document.getElementById('imageUrl').value.trim();
             const code = document.getElementById('assetCode').value.trim();
             const serial = document.getElementById('serialNum').value.trim();
             const img = document.getElementById('preview-img');
@@ -141,6 +150,10 @@
             document.getElementById('preview-serial').innerText = `Edición ${serial}` || "Edición --";
 
             if (url) {
+                // Corrección automática para URLs de GitHub
+                if (url.includes("github.com") && url.includes("/blob/")) {
+                    url = url.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/");
+                }
                 img.src = url;
                 img.classList.remove('hidden');
                 placeholder.classList.add('hidden');
@@ -155,19 +168,15 @@
             try {
                 if (StellarSdk.StrKey.isValidEd25519SecretSeed(secret)) {
                     const kp = StellarSdk.Keypair.fromSecret(secret);
-                    log(`Llave válida: ${kp.publicKey().substring(0,8)}...`);
+                    log(`Cuenta lista: ${kp.publicKey().substring(0,8)}...`);
                 }
-            } catch (e) {
-                // Silently wait for full key
-            }
+            } catch (e) {}
         }
 
         async function setHomeDomain() {
             let secret = document.getElementById('issuerSecret').value.trim();
             let domain = document.getElementById('homeDomain').value.trim();
-            
-            // Eliminar protocolos si el usuario los pega por error
-            domain = domain.replace(/^https?:\/\//, '').replace(/\/$/, '');
+            domain = domain.replace(/^https?:\/\//, '').split('/')[0];
 
             if (!StellarSdk.StrKey.isValidEd25519SecretSeed(secret)) {
                 log("Error: Secret Key inválida.", "error");
@@ -191,8 +200,7 @@
                 await server.submitTransaction(tx);
                 log("¡Dominio vinculado con éxito!", "success");
             } catch (e) {
-                console.error(e);
-                log(`Error: Llave o Dominio incorrecto`, "error");
+                log(`Error: ${e.message}`, "error");
             }
         }
 
@@ -208,22 +216,24 @@
                 return;
             }
 
-            if (!StellarSdk.StrKey.isValidEd25519PublicKey(receiver)) {
-                log("Error: Llave del receptor inválida.", "error");
-                return;
-            }
-
             try {
                 btn.disabled = true;
                 const kp = StellarSdk.Keypair.fromSecret(secret);
                 const account = await server.loadAccount(kp.publicKey());
                 const asset = new StellarSdk.Asset(code, kp.publicKey());
 
+                // Solo guardamos el nombre del archivo si la URL es muy larga para evitar el error de 64 bytes
+                const storageValue = url.length > 60 ? `check_toml:${code}` : url;
+
+                log("Preparando transacción...");
                 const tx = new StellarSdk.TransactionBuilder(account, {
                     fee: StellarSdk.BASE_FEE,
                     networkPassphrase: StellarSdk.Networks.TESTNET
                 })
-                .addOperation(StellarSdk.Operation.manageData({ name: `art:${code}`, value: url }))
+                .addOperation(StellarSdk.Operation.manageData({ 
+                    name: `ipfs:${code}`, // Cambiado a 'ipfs' o 'art' estandarizado
+                    value: storageValue 
+                }))
                 .addOperation(StellarSdk.Operation.createClaimableBalance({
                     asset: asset,
                     amount: "0.0000001",
@@ -234,9 +244,11 @@
 
                 tx.sign(kp);
                 const res = await server.submitTransaction(tx);
-                log(`Insignia emitida: ${res.hash.substring(0,10)}...`, "success");
+                log(`¡Éxito! Hash: ${res.hash.substring(0,10)}...`, "success");
+                log(`Recuerda añadir ${code} a tu stellar.toml`, "info");
             } catch (e) {
-                log(`Error en emisión: ${e.message}`, "error");
+                console.error(e);
+                log(`Error: ${e.message}`, "error");
             } finally {
                 btn.disabled = false;
             }
