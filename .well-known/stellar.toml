@@ -35,12 +35,11 @@ desc = "Certificado de participación en el bootcamp de Marketing Web3."
 image = "https://ernestocripto.github.io/SkillGraph/assets/MKT101.png"
 conditions = "SBT - No transferible"
 
-# Insignia 3: Talk Cripto Monedas UTEZ
+# Insignia 3: Talk Cripto Monedas
 [[CURRENCIES]]
 code = "CRIPTO01"
 issuer = "GAVOA6QBBSDKH3NMD2LQIJBXBT3CZPG4CHFGMNDZ4PJ63T7XVK5VKGF6"
 display_decimals = 0
+image = "https://raw.githubusercontent.com/ErnestoCripto/SkillGraph/main/assets/CRIPTO01.png?raw=true"
 name = "Cripto Monedas UTEZ"
 desc = "Reconocimiento por participar en la Talk Cripto Monedas."
-image = "https://ErnestoCripto.github.io/SkillGraph/assets/CRIPTO01.png"
-conditions = "SBT - No transferible"
