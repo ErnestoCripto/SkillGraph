@@ -51,12 +51,11 @@
                             <input type="password" id="issuerSecret" oninput="derivePublicKey()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-500 mb-1">Home Domain (para TOML)</label>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Home Domain (sin https://)</label>
                             <div class="flex gap-2">
-                                <input type="text" id="homeDomain" placeholder="usuario.github.io" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
+                                <input type="text" id="homeDomain" placeholder="ernestocripto.github.io" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
                                 <button onclick="setHomeDomain()" class="bg-slate-700 hover:bg-slate-600 px-3 rounded-lg text-xs font-bold transition-colors">Vincular</button>
                             </div>
-                            <p class="text-[10px] text-slate-500 mt-1 italic">Requerido para que la imagen se vea en exploradores.</p>
                         </div>
                     </div>
                 </div>
@@ -92,7 +91,7 @@
                             </div>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-500 mb-1">URL Imagen (Hospedada en GitHub)</label>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">URL Imagen</label>
                             <input type="text" id="imageUrl" oninput="updatePreview()" placeholder="https://..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
                         </div>
                         <button onclick="mintSBT()" id="mintBtn" class="stellar-gradient w-full py-3 rounded-lg font-bold text-white shadow-lg hover:brightness-110 transition-all flex justify-center items-center mt-4">
@@ -114,13 +113,6 @@
                         <p id="preview-name" class="font-bold text-lg text-white">Asset</p>
                         <p id="preview-serial" class="text-purple-400 text-sm">Edición --</p>
                     </div>
-                </div>
-                
-                <div class="bg-blue-900/20 border border-blue-800/50 p-4 rounded-xl">
-                    <h4 class="text-blue-400 font-bold text-[10px] uppercase mb-2">Recordatorio GitHub</h4>
-                    <p class="text-[10px] text-slate-400 leading-tight">
-                        Asegúrate de haber subido el archivo <code>.nojekyll</code> a tu repo, de lo contrario el <code>stellar.toml</code> no será visible.
-                    </p>
                 </div>
             </div>
 
@@ -160,18 +152,25 @@
 
         function derivePublicKey() {
             const secret = document.getElementById('issuerSecret').value.trim();
-            if (StellarSdk.StrKey.isValidEd25519SecretSeed(secret)) {
-                const kp = StellarSdk.Keypair.fromSecret(secret);
-                log(`Cuenta lista: ${kp.publicKey().substring(0,8)}...`);
+            try {
+                if (StellarSdk.StrKey.isValidEd25519SecretSeed(secret)) {
+                    const kp = StellarSdk.Keypair.fromSecret(secret);
+                    log(`Llave válida: ${kp.publicKey().substring(0,8)}...`);
+                }
+            } catch (e) {
+                // Silently wait for full key
             }
         }
 
         async function setHomeDomain() {
-            const secret = document.getElementById('issuerSecret').value.trim();
-            const domain = document.getElementById('homeDomain').value.trim();
+            let secret = document.getElementById('issuerSecret').value.trim();
+            let domain = document.getElementById('homeDomain').value.trim();
             
-            if (!secret || !domain) {
-                log("Error: Llave secreta y dominio requeridos.", "error");
+            // Eliminar protocolos si el usuario los pega por error
+            domain = domain.replace(/^https?:\/\//, '').replace(/\/$/, '');
+
+            if (!StellarSdk.StrKey.isValidEd25519SecretSeed(secret)) {
+                log("Error: Secret Key inválida.", "error");
                 return;
             }
 
@@ -192,19 +191,25 @@
                 await server.submitTransaction(tx);
                 log("¡Dominio vinculado con éxito!", "success");
             } catch (e) {
-                log(`Error vinculando: ${e.message}`, "error");
+                console.error(e);
+                log(`Error: Llave o Dominio incorrecto`, "error");
             }
         }
 
         async function mintSBT() {
             const btn = document.getElementById('mintBtn');
             const secret = document.getElementById('issuerSecret').value.trim();
-            const receiver = document.getElementById('receiverPublic').value.trim();
+            const receiver = document.getElementById('receiverPublic').value.trim().replace(/\s/g, '');
             const code = document.getElementById('assetCode').value.trim();
             const url = document.getElementById('imageUrl').value.trim();
 
-            if (!secret || !receiver || !url) {
-                log("Error: Datos incompletos.", "error");
+            if (!StellarSdk.StrKey.isValidEd25519SecretSeed(secret)) {
+                log("Error: Secret Key inválida.", "error");
+                return;
+            }
+
+            if (!StellarSdk.StrKey.isValidEd25519PublicKey(receiver)) {
+                log("Error: Llave del receptor inválida.", "error");
                 return;
             }
 
@@ -231,7 +236,7 @@
                 const res = await server.submitTransaction(tx);
                 log(`Insignia emitida: ${res.hash.substring(0,10)}...`, "success");
             } catch (e) {
-                log(`Error: ${e.message}`, "error");
+                log(`Error en emisión: ${e.message}`, "error");
             } finally {
                 btn.disabled = false;
             }
