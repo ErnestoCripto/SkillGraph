@@ -1,6 +1,6 @@
 # --- CONFIGURACIÓN GLOBAL ---
 # El dominio donde está alojado este archivo (sin https://)
-HOME_DOMAIN = "ErnestoCritpo.github.io"
+HOME_DOMAIN = "ernestocripto.github.io"
 
 # Cuentas vinculadas a este dominio
 ACCOUNTS = [
