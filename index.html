@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stellar SBT - Professional Issuer</title>
+    <!-- Stellar SDK -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stellar-sdk/10.4.1/stellar-sdk.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .stellar-gradient {
+            background: linear-gradient(135deg, #3e1f47 0%, #08415c 100%);
+        }
+        #console-output::-webkit-scrollbar { width: 6px; }
+        #console-output::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-10 border-b border-slate-800 pb-6">
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight">Stellar <span class="text-purple-400">SBT</span> Manager</h1>
+                <p class="text-slate-400 text-sm">Emisor Profesional para GitHub Pages</p>
+            </div>
+            <div class="text-right">
+                <span class="bg-purple-900/30 text-purple-400 px-3 py-1 rounded-full text-xs font-bold border border-purple-800">TESTNET</span>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Panel Izquierdo: Configuración de Cuenta (4 cols) -->
+            <div class="lg:col-span-4 space-y-6">
+                <div class="glass-card p-6 rounded-2xl shadow-xl">
+                    <h2 class="text-lg font-semibold mb-4 text-white flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                        Identidad del Emisor
+                    </h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Secret Key (S...)</label>
+                            <input type="password" id="issuerSecret" oninput="derivePublicKey()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Home Domain (para TOML)</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="homeDomain" placeholder="usuario.github.io" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
+                                <button onclick="setHomeDomain()" class="bg-slate-700 hover:bg-slate-600 px-3 rounded-lg text-xs font-bold transition-colors">Vincular</button>
+                            </div>
+                            <p class="text-[10px] text-slate-500 mt-1 italic">Requerido para que la imagen se vea en exploradores.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-4 rounded-2xl h-64 flex flex-col">
+                    <h3 class="text-xs font-bold text-emerald-400 uppercase mb-2">Logs de Red</h3>
+                    <div id="console-output" class="font-mono text-[10px] text-emerald-500/80 flex-1 overflow-y-auto leading-relaxed">
+                        > Sistema inicializado.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel Central: Emisión de Insignia (5 cols) -->
+            <div class="lg:col-span-5 space-y-6">
+                <div class="glass-card p-6 rounded-2xl shadow-xl">
+                    <h2 class="text-lg font-semibold mb-4 text-white flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Emitir Nueva Insignia
+                    </h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Public Key del Receptor (G...)</label>
+                            <input type="text" id="receiverPublic" placeholder="G..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-500 mb-1">Código (Asset)</label>
+                                <input type="text" id="assetCode" value="STELLAR101" maxlength="12" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-500 mb-1">Serie / Edición</label>
+                                <input type="text" id="serialNum" value="1/1" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">URL Imagen (Hospedada en GitHub)</label>
+                            <input type="text" id="imageUrl" oninput="updatePreview()" placeholder="https://..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
+                        </div>
+                        <button onclick="mintSBT()" id="mintBtn" class="stellar-gradient w-full py-3 rounded-lg font-bold text-white shadow-lg hover:brightness-110 transition-all flex justify-center items-center mt-4">
+                            <span id="btnText">Emitir Insignia</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel Derecho: Previsualización (3 cols) -->
+            <div class="lg:col-span-3 space-y-6">
+                <div class="glass-card p-6 rounded-2xl flex flex-col items-center text-center">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase mb-4 w-full text-left border-b border-slate-700 pb-2">Vista Previa</h3>
+                    <div id="preview-container" class="w-full aspect-square bg-slate-900 rounded-xl border-2 border-dashed border-slate-700 flex items-center justify-center overflow-hidden mb-4">
+                        <span id="preview-placeholder" class="text-slate-600 text-[10px] px-4">Introduce una URL</span>
+                        <img id="preview-img" class="hidden w-full h-full object-contain" src="" alt="Preview">
+                    </div>
+                    <div class="w-full text-left">
+                        <p id="preview-name" class="font-bold text-lg text-white">Asset</p>
+                        <p id="preview-serial" class="text-purple-400 text-sm">Edición --</p>
+                    </div>
+                </div>
+                
+                <div class="bg-blue-900/20 border border-blue-800/50 p-4 rounded-xl">
+                    <h4 class="text-blue-400 font-bold text-[10px] uppercase mb-2">Recordatorio GitHub</h4>
+                    <p class="text-[10px] text-slate-400 leading-tight">
+                        Asegúrate de haber subido el archivo <code>.nojekyll</code> a tu repo, de lo contrario el <code>stellar.toml</code> no será visible.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const server = new StellarSdk.Server("https://horizon-testnet.stellar.org");
+
+        function log(msg, type = 'info') {
+            const consoleEl = document.getElementById('console-output');
+            const timestamp = new Date().toLocaleTimeString();
+            const colorClass = type === 'error' ? 'text-red-400' : (type === 'success' ? 'text-emerald-400' : 'text-emerald-500/80');
+            consoleEl.innerHTML += `<div class="mb-1"><span>[${timestamp}]</span> <span class="${colorClass}">${msg}</span></div>`;
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+
+        function updatePreview() {
+            const url = document.getElementById('imageUrl').value.trim();
+            const code = document.getElementById('assetCode').value.trim();
+            const serial = document.getElementById('serialNum').value.trim();
+            const img = document.getElementById('preview-img');
+            const placeholder = document.getElementById('preview-placeholder');
+
+            document.getElementById('preview-name').innerText = code || "Asset";
+            document.getElementById('preview-serial').innerText = `Edición ${serial}` || "Edición --";
+
+            if (url) {
+                img.src = url;
+                img.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+            } else {
+                img.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+            }
+        }
+
+        function derivePublicKey() {
+            const secret = document.getElementById('issuerSecret').value.trim();
+            if (StellarSdk.StrKey.isValidEd25519SecretSeed(secret)) {
+                const kp = StellarSdk.Keypair.fromSecret(secret);
+                log(`Cuenta lista: ${kp.publicKey().substring(0,8)}...`);
+            }
+        }
+
+        async function setHomeDomain() {
+            const secret = document.getElementById('issuerSecret').value.trim();
+            const domain = document.getElementById('homeDomain').value.trim();
+            
+            if (!secret || !domain) {
+                log("Error: Llave secreta y dominio requeridos.", "error");
+                return;
+            }
+
+            try {
+                log(`Vinculando dominio: ${domain}...`);
+                const kp = StellarSdk.Keypair.fromSecret(secret);
+                const account = await server.loadAccount(kp.publicKey());
+                
+                const tx = new StellarSdk.TransactionBuilder(account, {
+                    fee: StellarSdk.BASE_FEE,
+                    networkPassphrase: StellarSdk.Networks.TESTNET
+                })
+                .addOperation(StellarSdk.Operation.setOptions({ homeDomain: domain }))
+                .setTimeout(60)
+                .build();
+
+                tx.sign(kp);
+                await server.submitTransaction(tx);
+                log("¡Dominio vinculado con éxito!", "success");
+            } catch (e) {
+                log(`Error vinculando: ${e.message}`, "error");
+            }
+        }
+
+        async function mintSBT() {
+            const btn = document.getElementById('mintBtn');
+            const secret = document.getElementById('issuerSecret').value.trim();
+            const receiver = document.getElementById('receiverPublic').value.trim();
+            const code = document.getElementById('assetCode').value.trim();
+            const url = document.getElementById('imageUrl').value.trim();
+
+            if (!secret || !receiver || !url) {
+                log("Error: Datos incompletos.", "error");
+                return;
+            }
+
+            try {
+                btn.disabled = true;
+                const kp = StellarSdk.Keypair.fromSecret(secret);
+                const account = await server.loadAccount(kp.publicKey());
+                const asset = new StellarSdk.Asset(code, kp.publicKey());
+
+                const tx = new StellarSdk.TransactionBuilder(account, {
+                    fee: StellarSdk.BASE_FEE,
+                    networkPassphrase: StellarSdk.Networks.TESTNET
+                })
+                .addOperation(StellarSdk.Operation.manageData({ name: `art:${code}`, value: url }))
+                .addOperation(StellarSdk.Operation.createClaimableBalance({
+                    asset: asset,
+                    amount: "0.0000001",
+                    claimants: [new StellarSdk.Claimant(receiver, StellarSdk.Claimant.predicateUnconditional())]
+                }))
+                .setTimeout(60)
+                .build();
+
+                tx.sign(kp);
+                const res = await server.submitTransaction(tx);
+                log(`Insignia emitida: ${res.hash.substring(0,10)}...`, "success");
+            } catch (e) {
+                log(`Error: ${e.message}`, "error");
+            } finally {
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
