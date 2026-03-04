@@ -54,7 +54,7 @@
                         <div>
                             <label class="block text-xs font-medium text-slate-500 mb-1">Home Domain (sin https://)</label>
                             <div class="flex gap-2">
-                                <input type="text" id="homeDomain" placeholder="ernestocripto.github.io" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
+                                <input type="text" id="homeDomain" placeholder="tuusuario.github.io" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
                                 <button onclick="setHomeDomain()" class="bg-slate-700 hover:bg-slate-600 px-3 rounded-lg text-xs font-bold transition-colors">Vincular</button>
                             </div>
                         </div>
@@ -92,7 +92,7 @@
                             </div>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-500 mb-1">URL Imagen (Hospedada en GitHub)</label>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">URL Imagen (RAW de GitHub)</label>
                             <input type="text" id="imageUrl" oninput="updatePreview()" placeholder="https://..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
                         </div>
                         <button onclick="mintSBT()" id="mintBtn" class="stellar-gradient w-full py-3 rounded-lg font-bold text-white shadow-lg hover:brightness-110 transition-all flex justify-center items-center mt-4">
@@ -104,8 +104,9 @@
                 <!-- Bloque de ayuda TOML -->
                 <div id="toml-helper" class="hidden glass-card p-6 rounded-2xl border-emerald-500/30">
                     <h3 class="text-emerald-400 font-bold text-sm mb-2">Paso Final para LOBSTR:</h3>
-                    <p class="text-xs text-slate-300">Copia este bloque exacto en tu archivo <code class="text-purple-400">stellar.toml</code>:</p>
+                    <p class="text-xs text-slate-300">Asegúrate de que tu archivo <code class="text-purple-400">stellar.toml</code> contenga esto exactamente:</p>
                     <div id="toml-code" class="code-block"></div>
+                    <p class="text-[10px] text-slate-400 mt-2 italic">Si después de actualizar el archivo sigues sin ver la imagen, espera 15 minutos a que la cache de LOBSTR expire.</p>
                 </div>
             </div>
 
@@ -124,10 +125,12 @@
                 </div>
 
                 <div class="bg-blue-900/20 border border-blue-800/50 p-4 rounded-xl">
-                    <h4 class="text-[10px] font-bold text-blue-400 uppercase mb-2">Recordatorio GitHub</h4>
-                    <p class="text-[10px] text-slate-400 leading-tight">
-                        Asegúrate de haber subido el archivo <code class="text-white">.nojekyll</code> a tu repo, de lo contrario el stellar.toml no será visible.
-                    </p>
+                    <h4 class="text-[10px] font-bold text-blue-400 uppercase mb-2">¿Sigue sin verse en el móvil?</h4>
+                    <ul class="text-[10px] text-slate-400 space-y-2 list-disc pl-3">
+                        <li>Verifica que <code class="text-white">.nojekyll</code> exista en el repo principal.</li>
+                        <li>Entra a <code class="text-blue-300">tudominio.com/.well-known/stellar.toml</code> en el navegador de tu móvil. Si no carga ahí, LOBSTR tampoco podrá leerlo.</li>
+                        <li>LOBSTR usa una cache agresiva. Intenta cerrar y abrir la app o desloguearte y volver a entrar.</li>
+                    </ul>
                 </div>
             </div>
 
@@ -149,14 +152,13 @@
             const img = document.getElementById('preview-img');
             const placeholder = document.getElementById('preview-placeholder');
             img.classList.add('hidden');
-            placeholder.innerText = "Error de carga. Asegúrate que sea el link RAW de GitHub.";
+            placeholder.innerText = "Error: Verifica que la URL termine en .png o .jpg";
             placeholder.classList.remove('hidden');
         }
 
         function formatGithubUrl(url) {
             if (!url) return "";
             let cleanUrl = url.trim();
-            // Si es un link de visualización de GitHub, convertir a RAW
             if (cleanUrl.includes("github.com") && cleanUrl.includes("/blob/")) {
                 cleanUrl = cleanUrl.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/");
             }
@@ -188,7 +190,7 @@
             try {
                 if (StellarSdk.StrKey.isValidEd25519SecretSeed(secret)) {
                     const kp = StellarSdk.Keypair.fromSecret(secret);
-                    log(`Cuenta lista: ${kp.publicKey().substring(0,8)}...`);
+                    log(`Llave pública detectada: ${kp.publicKey().substring(0,8)}...`);
                 }
             } catch (e) {}
         }
@@ -199,12 +201,12 @@
             domain = domain.replace(/^https?:\/\//, '').split('/')[0];
 
             if (!StellarSdk.StrKey.isValidEd25519SecretSeed(secret)) {
-                log("Error: Secret Key inválida.", "error");
+                log("Error: Llave secreta necesaria.", "error");
                 return;
             }
 
             try {
-                log(`Vinculando dominio: ${domain}...`);
+                log(`Estableciendo HOME_DOMAIN: ${domain}...`);
                 const kp = StellarSdk.Keypair.fromSecret(secret);
                 const account = await server.loadAccount(kp.publicKey());
                 
@@ -218,13 +220,9 @@
 
                 tx.sign(kp);
                 await server.submitTransaction(tx);
-                log("¡Dominio vinculado con éxito!", "success");
+                log("¡Dominio vinculado! LOBSTR ya sabe dónde buscar metadatos.", "success");
             } catch (e) {
-                if (e.message.includes("invalid version byte")) {
-                    log("Error: La Secret Key tiene un formato incorrecto.", "error");
-                } else {
-                    log(`Fallo: ${e.message}`, "error");
-                }
+                log(`Fallo al vincular: ${e.message}`, "error");
             }
         }
 
@@ -233,11 +231,10 @@
             const secret = document.getElementById('issuerSecret').value.trim();
             const receiver = document.getElementById('receiverPublic').value.trim().replace(/\s/g, '');
             const code = document.getElementById('assetCode').value.trim();
-            const rawUrl = document.getElementById('imageUrl').value;
-            const url = formatGithubUrl(rawUrl);
+            const url = formatGithubUrl(document.getElementById('imageUrl').value);
 
             if (!StellarSdk.StrKey.isValidEd25519SecretSeed(secret)) {
-                log("Error: Secret Key inválida.", "error");
+                log("Error: Llave secreta inválida.", "error");
                 return;
             }
 
@@ -247,11 +244,8 @@
                 const account = await server.loadAccount(kp.publicKey());
                 const asset = new StellarSdk.Asset(code, kp.publicKey());
 
-                let storageValue = url;
-                if (url.length > 64) {
-                    storageValue = `toml:CURRENCIES:${code}`; 
-                    log("URL larga detectada. Se usará el TOML para la imagen.", "info");
-                }
+                // Guardamos solo un puntero si la URL es larga, de lo contrario la URL completa
+                let storageValue = url.length > 64 ? `toml:CURRENCIES:${code}` : url;
 
                 log("Emitiendo SBT...");
                 const tx = new StellarSdk.TransactionBuilder(account, {
@@ -272,19 +266,15 @@
 
                 tx.sign(kp);
                 const res = await server.submitTransaction(tx);
-                log(`¡Enviado! Hash: ${res.hash.substring(0,8)}...`, "success");
+                log(`¡Éxito! Hash: ${res.hash.substring(0,10)}...`, "success");
 
-                // Mostrar ayuda TOML formateada correctamente
-                const tomlCode = `[[CURRENCIES]]\ncode = "${code}"\nissuer = "${kp.publicKey()}"\ndisplay_decimals = 0\nimage = "${url}"\nname = "Tu Insignia"\ndesc = "Otorgada por Logro"`;
+                // Generamos bloque TOML limpio
+                const tomlCode = `[[CURRENCIES]]\ncode = "${code}"\nissuer = "${kp.publicKey()}"\ndisplay_decimals = 0\nimage = "${url}"\nname = "${code} SBT"\ndesc = "Certificado Digital Auténtico"`;
                 document.getElementById('toml-code').innerText = tomlCode;
                 document.getElementById('toml-helper').classList.remove('hidden');
 
             } catch (e) {
-                if (e.message.includes("longer than 64 bytes")) {
-                    log("Error: La URL sigue siendo muy larga para el Ledger directo.", "error");
-                } else {
-                    log(`Error: ${e.message}`, "error");
-                }
+                log(`Error: ${e.message}`, "error");
             } finally {
                 btn.disabled = false;
             }
