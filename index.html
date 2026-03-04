@@ -20,6 +20,7 @@
         }
         #console-output::-webkit-scrollbar { width: 6px; }
         #console-output::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+        .code-block { background: #000; color: #10b981; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 11px; margin-top: 10px; border: 1px solid #334155; }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-8">
@@ -38,7 +39,7 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            <!-- Panel Izquierdo: Configuración de Cuenta (4 cols) -->
+            <!-- Panel Izquierdo -->
             <div class="lg:col-span-4 space-y-6">
                 <div class="glass-card p-6 rounded-2xl shadow-xl">
                     <h2 class="text-lg font-semibold mb-4 text-white flex items-center">
@@ -68,7 +69,7 @@
                 </div>
             </div>
 
-            <!-- Panel Central: Emisión de Insignia (5 cols) -->
+            <!-- Panel Central -->
             <div class="lg:col-span-5 space-y-6">
                 <div class="glass-card p-6 rounded-2xl shadow-xl">
                     <h2 class="text-lg font-semibold mb-4 text-white flex items-center">
@@ -91,23 +92,29 @@
                             </div>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-500 mb-1">URL Imagen (GitHub)</label>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">URL Imagen (Directa)</label>
                             <input type="text" id="imageUrl" oninput="updatePreview()" placeholder="https://..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
-                            <p class="text-[10px] text-slate-500 mt-1 italic">El sistema ajustará la URL automáticamente para evitar errores.</p>
                         </div>
                         <button onclick="mintSBT()" id="mintBtn" class="stellar-gradient w-full py-3 rounded-lg font-bold text-white shadow-lg hover:brightness-110 transition-all flex justify-center items-center mt-4">
                             <span id="btnText">Emitir Insignia</span>
                         </button>
                     </div>
                 </div>
+
+                <!-- Bloque de ayuda TOML -->
+                <div id="toml-helper" class="hidden glass-card p-6 rounded-2xl border-emerald-500/30">
+                    <h3 class="text-emerald-400 font-bold text-sm mb-2">Paso Final para LOBSTR:</h3>
+                    <p class="text-xs text-slate-300">Copia esto en tu archivo <code class="text-purple-400">stellar.toml</code> en GitHub:</p>
+                    <div id="toml-code" class="code-block"></div>
+                </div>
             </div>
 
-            <!-- Panel Derecho: Previsualización (3 cols) -->
+            <!-- Panel Derecho -->
             <div class="lg:col-span-3 space-y-6">
                 <div class="glass-card p-6 rounded-2xl flex flex-col items-center text-center">
                     <h3 class="text-xs font-bold text-slate-400 uppercase mb-4 w-full text-left border-b border-slate-700 pb-2">Vista Previa</h3>
                     <div id="preview-container" class="w-full aspect-square bg-slate-900 rounded-xl border-2 border-dashed border-slate-700 flex items-center justify-center overflow-hidden mb-4">
-                        <span id="preview-placeholder" class="text-slate-600 text-[10px] px-4 text-center">Pega una URL de GitHub para ver la insignia</span>
+                        <span id="preview-placeholder" class="text-slate-600 text-[10px] px-4 text-center">Pega una URL para previsualizar</span>
                         <img id="preview-img" class="hidden w-full h-full object-contain" src="" alt="Preview" onerror="handleImageError()">
                     </div>
                     <div class="w-full text-left">
@@ -135,14 +142,13 @@
             const img = document.getElementById('preview-img');
             const placeholder = document.getElementById('preview-placeholder');
             img.classList.add('hidden');
-            placeholder.innerText = "No se pudo cargar la imagen. Revisa que sea un archivo directo (.png, .jpg)";
+            placeholder.innerText = "Error de carga. Asegúrate que sea el link RAW de GitHub.";
             placeholder.classList.remove('hidden');
         }
 
         function formatGithubUrl(url) {
             if (!url) return "";
             let cleanUrl = url.trim();
-            // Convertir URL de visualización de GitHub a URL de contenido crudo
             if (cleanUrl.includes("github.com") && cleanUrl.includes("/blob/")) {
                 cleanUrl = cleanUrl.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/");
             }
@@ -150,8 +156,7 @@
         }
 
         function updatePreview() {
-            const rawUrl = document.getElementById('imageUrl').value;
-            const url = formatGithubUrl(rawUrl);
+            const url = formatGithubUrl(document.getElementById('imageUrl').value);
             const code = document.getElementById('assetCode').value.trim();
             const serial = document.getElementById('serialNum').value.trim();
             const img = document.getElementById('preview-img');
@@ -175,7 +180,7 @@
             try {
                 if (StellarSdk.StrKey.isValidEd25519SecretSeed(secret)) {
                     const kp = StellarSdk.Keypair.fromSecret(secret);
-                    log(`Llave detectada: ${kp.publicKey().substring(0,8)}...`);
+                    log(`Llave lista: ${kp.publicKey().substring(0,8)}...`);
                 }
             } catch (e) {}
         }
@@ -191,7 +196,7 @@
             }
 
             try {
-                log(`Sincronizando dominio: ${domain}...`);
+                log(`Vinculando dominio: ${domain}...`);
                 const kp = StellarSdk.Keypair.fromSecret(secret);
                 const account = await server.loadAccount(kp.publicKey());
                 
@@ -205,7 +210,7 @@
 
                 tx.sign(kp);
                 await server.submitTransaction(tx);
-                log("¡Dominio vinculado correctamente!", "success");
+                log("¡Dominio vinculado! LOBSTR ya sabe dónde buscar el TOML.", "success");
             } catch (e) {
                 log(`Fallo: ${e.message}`, "error");
             }
@@ -216,10 +221,11 @@
             const secret = document.getElementById('issuerSecret').value.trim();
             const receiver = document.getElementById('receiverPublic').value.trim().replace(/\s/g, '');
             const code = document.getElementById('assetCode').value.trim();
-            const url = formatGithubUrl(document.getElementById('imageUrl').value);
+            const rawUrl = document.getElementById('imageUrl').value;
+            const url = formatGithubUrl(rawUrl);
 
             if (!StellarSdk.StrKey.isValidEd25519SecretSeed(secret)) {
-                log("Error: Secret Key necesaria.", "error");
+                log("Error: Falta Secret Key.", "error");
                 return;
             }
 
@@ -229,16 +235,14 @@
                 const account = await server.loadAccount(kp.publicKey());
                 const asset = new StellarSdk.Asset(code, kp.publicKey());
 
-                // SOLUCIÓN AL ERROR DE 64 BYTES:
-                // Si la URL es muy larga, guardamos una referencia corta.
-                // El estándar SBT indica que si no hay URL en ManageData, se busca en el TOML.
+                // Manejo de los 64 bytes
                 let storageValue = url;
                 if (url.length > 64) {
-                    log("URL larga detectada. Optimizando para la blockchain...", "info");
-                    storageValue = `toml:${code}`; // Referencia corta
+                    storageValue = `ipfs:ver_toml`; 
+                    log("URL muy larga. La imagen se cargará desde el TOML.", "info");
                 }
 
-                log("Enviando a la red Stellar...");
+                log("Emitiendo SBT...");
                 const tx = new StellarSdk.TransactionBuilder(account, {
                     fee: StellarSdk.BASE_FEE,
                     networkPassphrase: StellarSdk.Networks.TESTNET
@@ -257,12 +261,15 @@
 
                 tx.sign(kp);
                 const res = await server.submitTransaction(tx);
-                log(`¡Éxito! Transacción: ${res.hash.substring(0,10)}...`, "success");
+                log(`¡Enviado! Hash: ${res.hash.substring(0,8)}...`, "success");
+
+                // Mostrar ayuda TOML
+                const tomlCode = `[[CURRENCIES]]\ncode="${code}"\nissuer="${kp.publicKey()}"\ndisplay_decimals=0\nimage="${url}"`;
+                document.getElementById('toml-code').innerText = tomlCode;
+                document.getElementById('toml-helper').classList.remove('hidden');
+
             } catch (e) {
                 log(`Error: ${e.message}`, "error");
-                if (e.response && e.response.data && e.response.data.extras) {
-                    console.error(e.response.data.extras.result_codes);
-                }
             } finally {
                 btn.disabled = false;
             }
