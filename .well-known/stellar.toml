@@ -22,7 +22,7 @@ issuer = "GAVOA6QBBSDKH3NMD2LQIJBXT3CZPG4CHFGMNDZ4PJ63T7XVK5VKGF6"
 display_decimals = 0
 name = "Stellar Fundamentals"
 desc = "Insignia otorgada por completar el nivel basico de Stellar."
-image = "https://ernestocripto.github.io/SkillGraph/assets/stellar101.png"
+image="https://raw.githubusercontent.com/ErnestoCripto/SkillGraph/main/assets/STELLAR101.png"
 conditions = "SBT - No transferible"
 
 # Insignia 2: Bootcamp de Marketing Web3
