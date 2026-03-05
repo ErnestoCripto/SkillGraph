@@ -1,1 +1,11 @@
+# Archivo de Configuración Stellar
+HOME_DOMAIN = "ernestocripto.github.io"
 
+[[CURRENCIES]]
+code = "MKT101"
+issuer = "GAVOA6QBBSDKH3NMD2LQIJBXBT3CZPG4CHFGMNDZ4PJ63T7XVK5VKGF6"
+display_decimals = 0
+name = "Marketing Digital"
+image = "https://raw.githubusercontent.com/ErnestoCripto/SkillGraph/main/assets/MKT101.png"
+desc = "BootCamp de Marketing Digital"
+conditions = "Non-transferable"
