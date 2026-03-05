@@ -85,7 +85,9 @@
                                 <button onclick="setFullProfile()" class="w-full bg-blue-600 hover:bg-blue-500 py-2 rounded-lg text-xs font-bold transition-all">
                                     Paso A: Configurar Perfil Completo
                                 </button>
-                                <p class="text-[9px] text-slate-500 text-center italic">*Vincula el dominio y añade datos de organización en cadena.</p>
+                                <button onclick="forceRefresh()" class="w-full bg-slate-700 hover:bg-slate-600 py-2 rounded-lg text-[10px] font-bold transition-all">
+                                    ¿Sigue sin verse? Forzar Re-indexación
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -128,7 +130,7 @@
                         </div>
 
                         <button onclick="mintSBT()" id="mintBtn" class="stellar-gradient w-full py-3 rounded-lg font-bold text-white shadow-lg hover:brightness-110 transition-all">
-                            Paso B: Emitir e Inyectar Imagen
+                            Paso B: Emitir e Inyectar Imagen Fragmentada
                         </button>
                     </div>
                 </div>
@@ -136,7 +138,7 @@
                 <!-- Bloque TOML -->
                 <div id="toml-helper" class="hidden glass-card p-6 rounded-2xl border-emerald-500/50 bg-emerald-950/20">
                     <h3 class="text-emerald-400 font-bold text-sm mb-2">Paso C: REEMPLAZA tu stellar.toml</h3>
-                    <p class="text-[10px] text-slate-300 mb-2">Borra TODO el contenido de tu archivo actual en GitHub y pega esto:</p>
+                    <p class="text-[10px] text-slate-300 mb-2">Asegúrate de que el archivo en GitHub sea accesible públicamente:</p>
                     <div class="relative">
                         <div id="toml-code" class="code-block"></div>
                         <div class="copy-badge" onclick="copyToml()">Copiar Todo</div>
@@ -155,13 +157,12 @@
                 </div>
 
                 <div class="bg-amber-900/20 border border-amber-800/50 p-4 rounded-xl">
-                    <h4 class="text-[11px] font-bold text-amber-400 uppercase mb-2">Solución a la Imagen</h4>
-                    <p class="text-[10px] text-slate-400 leading-relaxed mb-2">
-                        He añadido <strong>Inyección de Metadatos</strong> en el Paso B. Ahora la URL de la imagen se guarda directamente en la cuenta emisora bajo la clave <code class="text-white">icon:[CODE]</code>.
-                    </p>
-                    <p class="text-[10px] text-slate-400 leading-relaxed">
-                        Esto ayuda a LOBSTR a encontrar la imagen incluso si falla al leer el archivo TOML.
-                    </p>
+                    <h4 class="text-[11px] font-bold text-amber-400 uppercase mb-2">¿Por qué fallan las imágenes?</h4>
+                    <ul class="text-[10px] text-slate-400 space-y-2">
+                        <li>1. <strong>Caché:</strong> LOBSTR guarda la imagen fallida por 24h. Usa el botón de re-indexación.</li>
+                        <li>2. <strong>Longitud URL:</strong> GitHub genera URLs largas (>64 chars). Ahora las fragmentamos en la blockchain.</li>
+                        <li>3. <strong>TOML:</strong> Debe estar en <code class="text-white">.well-known/stellar.toml</code> y no en la raíz.</li>
+                    </ul>
                 </div>
             </div>
 
@@ -173,7 +174,6 @@
 
         function log(msg, type = 'info') {
             const consoleEl = document.getElementById('console-output');
-            const colorClass = type === 'error' ? 'text-red-400' : (type === 'success' ? 'text-emerald-400 font-bold' : 'text-emerald-500/70');
             consoleEl.innerHTML += `<div class="mb-1"> ${msg}</div>`;
             consoleEl.scrollTop = consoleEl.scrollHeight;
         }
@@ -214,6 +214,26 @@
             } catch (e) { log(`Error de perfil: ${e.message}`, "error"); }
         }
 
+        // Función para forzar que LOBSTR vuelva a leer el dominio
+        async function forceRefresh() {
+            let secret = document.getElementById('issuerSecret').value.trim();
+            if (!secret) return;
+            try {
+                log("Enviando pulso de re-indexación...");
+                const kp = StellarSdk.Keypair.fromSecret(secret);
+                const account = await server.loadAccount(kp.publicKey());
+                const tx = new StellarSdk.TransactionBuilder(account, {
+                    fee: StellarSdk.BASE_FEE,
+                    networkPassphrase: StellarSdk.Networks.TESTNET
+                })
+                .addOperation(StellarSdk.Operation.manageData({ name: "refresh", value: Date.now().toString() }))
+                .setTimeout(60).build();
+                tx.sign(kp);
+                await server.submitTransaction(tx);
+                log("¡Pulso enviado! LOBSTR debería re-escanear en breve.", "success");
+            } catch(e) { log("Error al refrescar: " + e.message, "error"); }
+        }
+
         async function mintSBT() {
             const btn = document.getElementById('mintBtn');
             const secret = document.getElementById('issuerSecret').value.trim();
@@ -234,28 +254,32 @@
                 const account = await server.loadAccount(kp.publicKey());
                 const asset = new StellarSdk.Asset(code, kp.publicKey());
 
-                log(`Emitiendo activo e inyectando imagen...`);
+                log(`Emitiendo con URL fragmentada...`);
                 const tx = new StellarSdk.TransactionBuilder(account, {
                     fee: StellarSdk.BASE_FEE,
                     networkPassphrase: StellarSdk.Networks.TESTNET
-                })
-                // Inyectar URL de imagen directamente en la cuenta como metadato de respaldo
-                .addOperation(StellarSdk.Operation.manageData({ 
-                    name: `icon:${code}`, 
-                    value: url.substring(0, 64) // Stellar tiene un límite de 64 bytes por valor de Data
-                }))
-                // Crear el Claimable Balance
-                .addOperation(StellarSdk.Operation.createClaimableBalance({
+                });
+
+                // Fragmentación de URL (Stellar tiene límite de 64 bytes por clave)
+                const urlPart1 = url.substring(0, 64);
+                const urlPart2 = url.length > 64 ? url.substring(64, 128) : "";
+
+                tx.addOperation(StellarSdk.Operation.manageData({ name: `icon:${code}`, value: urlPart1 }));
+                if(urlPart2) {
+                    tx.addOperation(StellarSdk.Operation.manageData({ name: `icon:${code}_2`, value: urlPart2 }));
+                }
+
+                tx.addOperation(StellarSdk.Operation.createClaimableBalance({
                     asset: asset, amount: "0.0000001",
                     claimants: [new StellarSdk.Claimant(receiver, StellarSdk.Claimant.predicateUnconditional())]
-                }))
-                .setTimeout(60).build();
+                }));
 
-                tx.sign(kp);
-                await server.submitTransaction(tx);
-                log("¡Emisión e inyección completadas!", "success");
+                const builtTx = tx.setTimeout(60).build();
+                builtTx.sign(kp);
+                await server.submitTransaction(builtTx);
+                log("¡Emisión exitosa!", "success");
 
-                // Generación de TOML optimizado
+                // TOML
                 const tomlOutput = `HOME_DOMAIN = "${domain}"
 
 [DOCUMENTATION]
@@ -269,7 +293,7 @@ display_decimals = 0
 name = "${name}"
 desc = "${desc}"
 image = "${url}"
-conditions = "Insignia SBT no transferible. Propiedad de Skill Graph."`;
+conditions = "Insignia SBT no transferible."`;
 
                 document.getElementById('toml-code').innerText = tomlOutput;
                 document.getElementById('toml-helper').classList.remove('hidden');
@@ -286,7 +310,7 @@ conditions = "Insignia SBT no transferible. Propiedad de Skill Graph."`;
             dummy.value = text; dummy.select();
             document.execCommand("copy");
             document.body.removeChild(dummy);
-            log("¡Copiado! Actualiza tu archivo en GitHub.", "success");
+            log("¡Copiado!", "success");
         }
     </script>
 </body>
