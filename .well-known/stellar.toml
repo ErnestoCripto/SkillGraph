@@ -1,1 +1,14 @@
+HOME_DOMAIN = "ernestocripto.github.io"
 
+[DOCUMENTATION]
+ORG_NAME = "Skill Graph"
+ORG_URL = "https://ernestocripto.github.io"
+
+[[CURRENCIES]]
+code = "CRIPTO01"
+issuer = "GAVOA6QBBSDKH3NMD2LQIJBXBT3CZPG4CHFGMNDZ4PJ63T7XVK5VKGF6"
+display_decimals = 0
+name = "Talk Cripto"
+desc = "Insignia de asistencia a la plática Cripto"
+image = "https://github.com/ErnestoCripto/SkillGraph/blob/main/assets/CRIPTO01.png?raw=true"
+conditions = "Insignia SBT no transferible"
