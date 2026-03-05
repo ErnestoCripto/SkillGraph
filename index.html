@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-<!-- borrar -->    
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,7 +26,7 @@
             padding: 15px; 
             border-radius: 8px; 
             font-family: 'Courier New', monospace; 
-            font-size: 13px; 
+            font-size: 11px; 
             margin-top: 10px; 
             border: 1px solid #334155; 
             white-space: pre-wrap; 
@@ -56,7 +55,7 @@
         <header class="flex justify-between items-center mb-10 border-b border-slate-800 pb-6">
             <div>
                 <h1 class="text-3xl font-bold tracking-tight">Stellar <span class="text-purple-400">SBT</span> Manager</h1>
-                <p class="text-slate-400 text-sm">Corrector de Metadatos y stellar.toml</p>
+                <p class="text-slate-400 text-sm">Corrector Definitivo de Imágenes y Metadatos</p>
             </div>
             <div class="text-right">
                 <span class="bg-purple-900/30 text-purple-400 px-3 py-1 rounded-full text-xs font-bold border border-purple-800">TESTNET</span>
@@ -79,15 +78,15 @@
                             <input type="text" id="orgName" value="Skill Graph" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-500 mb-1">Tu Dominio (GitHub Pages)</label>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Tu Dominio (Sin https://)</label>
                             <input type="text" id="homeDomain" value="ernestocripto.github.io" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
                             
                             <div class="grid grid-cols-1 gap-2 mt-3">
                                 <button onclick="setFullProfile()" class="w-full bg-blue-600 hover:bg-blue-500 py-2 rounded-lg text-xs font-bold transition-all">
-                                    Paso A: Configurar Perfil Completo
+                                    Paso A: Actualizar Home Domain
                                 </button>
                                 <button onclick="forceRefresh()" class="w-full bg-slate-700 hover:bg-slate-600 py-2 rounded-lg text-[10px] font-bold transition-all">
-                                    ¿Sigue sin verse? Forzar Re-indexación
+                                    Paso C: Forzar Re-indexación (Pulso)
                                 </button>
                             </div>
                         </div>
@@ -122,27 +121,23 @@
                             </div>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-500 mb-1">Imagen (URL RAW de GitHub)</label>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">URL Imagen (Usar HTTPS siempre)</label>
                             <input type="text" id="imageUrl" oninput="updatePreview()" value="https://raw.githubusercontent.com/ErnestoCripto/SkillGraph/main/assets/MKT101.png" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white text-[10px] outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-slate-500 mb-1">Descripción</label>
-                            <input type="text" id="eventDesc" value="Insignia de experto en marketing." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
                         </div>
 
                         <button onclick="mintSBT()" id="mintBtn" class="stellar-gradient w-full py-3 rounded-lg font-bold text-white shadow-lg hover:brightness-110 transition-all">
-                            Paso B: Emitir e Inyectar Imagen Fragmentada
+                            Paso B: Emitir con Inyección Triple
                         </button>
                     </div>
                 </div>
 
                 <!-- Bloque TOML -->
                 <div id="toml-helper" class="hidden glass-card p-6 rounded-2xl border-emerald-500/50 bg-emerald-950/20">
-                    <h3 class="text-emerald-400 font-bold text-sm mb-2">Paso C: REEMPLAZA tu stellar.toml</h3>
-                    <p class="text-[10px] text-slate-300 mb-2">Asegúrate de que el archivo en GitHub sea accesible públicamente:</p>
+                    <h3 class="text-emerald-400 font-bold text-sm mb-2">Paso D: REEMPLAZA tu stellar.toml</h3>
+                    <p class="text-[10px] text-slate-300 mb-2">Asegúrate de tener un archivo vacío llamado <code class="text-white">.nojekyll</code> en la raíz de tu repo.</p>
                     <div class="relative">
                         <div id="toml-code" class="code-block"></div>
-                        <div class="copy-badge" onclick="copyToml()">Copiar Todo</div>
+                        <div class="copy-badge" onclick="copyToml()">Copiar TOML</div>
                     </div>
                 </div>
             </div>
@@ -157,12 +152,12 @@
                     <p id="preview-name" class="font-bold text-white">MKT101</p>
                 </div>
 
-                <div class="bg-amber-900/20 border border-amber-800/50 p-4 rounded-xl">
-                    <h4 class="text-[11px] font-bold text-amber-400 uppercase mb-2">¿Por qué fallan las imágenes?</h4>
+                <div class="bg-red-900/20 border border-red-800/50 p-4 rounded-xl">
+                    <h4 class="text-[11px] font-bold text-red-400 uppercase mb-2">Checklist de Emergencia</h4>
                     <ul class="text-[10px] text-slate-400 space-y-2">
-                        <li>1. <strong>Caché:</strong> LOBSTR guarda la imagen fallida por 24h. Usa el botón de re-indexación.</li>
-                        <li>2. <strong>Longitud URL:</strong> GitHub genera URLs largas (>64 chars). Ahora las fragmentamos en la blockchain.</li>
-                        <li>3. <strong>TOML:</strong> Debe estar en <code class="text-white">.well-known/stellar.toml</code> y no en la raíz.</li>
+                        <li>• ¿El archivo <code class="text-white">stellar.toml</code> abre en el navegador?</li>
+                        <li>• ¿La imagen abre sola en el navegador?</li>
+                        <li>• LOBSTR puede tardar hasta 48h en actualizar si la imagen falló la primera vez.</li>
                     </ul>
                 </div>
             </div>
@@ -187,16 +182,15 @@
         async function setFullProfile() {
             let secret = document.getElementById('issuerSecret').value.trim();
             let domain = document.getElementById('homeDomain').value.trim();
-            let org = document.getElementById('orgName').value.trim();
-            domain = domain.replace(/^https?:\/\//, '').replace(/\/$/, '').split('/')[0].trim();
+            domain = domain.replace(/^https?:\/\//, '').replace(/\/$/, '').trim();
             
             if (!StellarSdk.StrKey.isValidEd25519SecretSeed(secret)) {
-                log("Error: Llave secreta necesaria.", "error");
+                log("Error: Llave secreta inválida.", "error");
                 return;
             }
 
             try {
-                log(`Configurando perfil profesional...`);
+                log(`Vinculando dominio: ${domain}...`);
                 const kp = StellarSdk.Keypair.fromSecret(secret);
                 const account = await server.loadAccount(kp.publicKey());
                 
@@ -205,34 +199,31 @@
                     networkPassphrase: StellarSdk.Networks.TESTNET
                 })
                 .addOperation(StellarSdk.Operation.setOptions({ homeDomain: domain }))
-                .addOperation(StellarSdk.Operation.manageData({ name: "org", value: org }))
-                .addOperation(StellarSdk.Operation.manageData({ name: "conditions", value: "SBT - Non Transferable" }))
                 .setTimeout(60).build();
 
                 tx.sign(kp);
                 await server.submitTransaction(tx);
-                log("¡Perfil de Emisor actualizado!", "success");
-            } catch (e) { log(`Error de perfil: ${e.message}`, "error"); }
+                log("¡Dominio vinculado! Paso A completado.", "success");
+            } catch (e) { log(`Error: ${e.message}`, "error"); }
         }
 
-        // Función para forzar que LOBSTR vuelva a leer el dominio
         async function forceRefresh() {
             let secret = document.getElementById('issuerSecret').value.trim();
             if (!secret) return;
             try {
-                log("Enviando pulso de re-indexación...");
+                log("Emitiendo pulso de actualización de caché...");
                 const kp = StellarSdk.Keypair.fromSecret(secret);
                 const account = await server.loadAccount(kp.publicKey());
                 const tx = new StellarSdk.TransactionBuilder(account, {
                     fee: StellarSdk.BASE_FEE,
                     networkPassphrase: StellarSdk.Networks.TESTNET
                 })
-                .addOperation(StellarSdk.Operation.manageData({ name: "refresh", value: Date.now().toString() }))
+                .addOperation(StellarSdk.Operation.manageData({ name: "update_sig", value: Date.now().toString() }))
                 .setTimeout(60).build();
                 tx.sign(kp);
                 await server.submitTransaction(tx);
-                log("¡Pulso enviado! LOBSTR debería re-escanear en breve.", "success");
-            } catch(e) { log("Error al refrescar: " + e.message, "error"); }
+                log("¡Pulso enviado! Esto fuerza a los indexadores a revisar el TOML.", "success");
+            } catch(e) { log("Error: " + e.message, "error"); }
         }
 
         async function mintSBT() {
@@ -242,12 +233,10 @@
             const code = document.getElementById('assetCode').value.trim();
             const url = document.getElementById('imageUrl').value.trim();
             const name = document.getElementById('eventName').value.trim();
-            const desc = document.getElementById('eventDesc').value.trim();
             const domain = document.getElementById('homeDomain').value.trim();
-            const org = document.getElementById('orgName').value.trim();
 
             if (!StellarSdk.StrKey.isValidEd25519SecretSeed(secret)) { log("Llave secreta necesaria.", "error"); return; }
-            if (!receiver) { log("Llave pública del receptor necesaria.", "error"); return; }
+            if (!receiver) { log("Receptor necesario.", "error"); return; }
 
             try {
                 btn.disabled = true;
@@ -255,50 +244,48 @@
                 const account = await server.loadAccount(kp.publicKey());
                 const asset = new StellarSdk.Asset(code, kp.publicKey());
 
-                log(`Emitiendo con URL fragmentada...`);
+                log(`Inyectando metadatos triples para ${code}...`);
                 const tx = new StellarSdk.TransactionBuilder(account, {
                     fee: StellarSdk.BASE_FEE,
                     networkPassphrase: StellarSdk.Networks.TESTNET
                 });
 
-                // Fragmentación de URL (Stellar tiene límite de 64 bytes por clave)
-                const urlPart1 = url.substring(0, 64);
-                const urlPart2 = url.length > 64 ? url.substring(64, 128) : "";
-
-                tx.addOperation(StellarSdk.Operation.manageData({ name: `icon:${code}`, value: urlPart1 }));
-                if(urlPart2) {
-                    tx.addOperation(StellarSdk.Operation.manageData({ name: `icon:${code}_2`, value: urlPart2 }));
+                // 1. Fragmentación para estandares modernos (icon)
+                tx.addOperation(StellarSdk.Operation.manageData({ name: `icon:${code}`, value: url.substring(0, 64) }));
+                if(url.length > 64) {
+                    tx.addOperation(StellarSdk.Operation.manageData({ name: `icon:${code}_2`, value: url.substring(64, 128) }));
                 }
 
+                // 2. Estándar heredado (asset_image) - Muy usado por billeteras antiguas
+                tx.addOperation(StellarSdk.Operation.manageData({ name: `asset_image:${code}`, value: url.substring(0, 64) }));
+
+                // 3. Emisión del Claimable Balance
                 tx.addOperation(StellarSdk.Operation.createClaimableBalance({
-                    asset: asset, amount: "0.0000001",
+                    asset: asset, amount: "0.000001",
                     claimants: [new StellarSdk.Claimant(receiver, StellarSdk.Claimant.predicateUnconditional())]
                 }));
 
                 const builtTx = tx.setTimeout(60).build();
                 builtTx.sign(kp);
                 await server.submitTransaction(builtTx);
-                log("¡Emisión exitosa!", "success");
+                log("¡Emisión con metadatos triples exitosa!", "success");
 
-                // TOML
-                const tomlOutput = `HOME_DOMAIN = "${domain}"
-
-[DOCUMENTATION]
-ORG_NAME = "${org}"
-ORG_URL = "https://${domain}"
+                // Generar TOML Correcto
+                const tomlOutput = `# Archivo de Configuración Stellar
+HOME_DOMAIN = "${domain}"
 
 [[CURRENCIES]]
 code = "${code}"
 issuer = "${kp.publicKey()}"
 display_decimals = 0
 name = "${name}"
-desc = "${desc}"
 image = "${url}"
-conditions = "Insignia SBT no transferible."`;
+desc = "Soulbound Token (SBT) - Skill Graph Verification"
+conditions = "Non-transferable"`;
 
                 document.getElementById('toml-code').innerText = tomlOutput;
                 document.getElementById('toml-helper').classList.remove('hidden');
-                document.getElementById('toml-helper').scrollIntoView({ behavior: 'smooth' });
+                log("Paso B completado. Actualiza tu archivo TOML en GitHub.", "info");
 
             } catch (e) { log(`Error: ${e.message}`, "error"); }
             finally { btn.disabled = false; }
