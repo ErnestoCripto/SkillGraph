@@ -55,7 +55,7 @@
         <header class="flex justify-between items-center mb-10 border-b border-slate-800 pb-6">
             <div>
                 <h1 class="text-3xl font-bold tracking-tight">Stellar <span class="text-purple-400">SBT</span> Manager</h1>
-                <p class="text-slate-400 text-sm">Corrector Definitivo de stellar.toml</p>
+                <p class="text-slate-400 text-sm">Corrector Definitivo de Perfil y stellar.toml</p>
             </div>
             <div class="text-right">
                 <span class="bg-purple-900/30 text-purple-400 px-3 py-1 rounded-full text-xs font-bold border border-purple-800">TESTNET</span>
@@ -67,24 +67,34 @@
             <!-- Panel Izquierdo -->
             <div class="lg:col-span-4 space-y-6">
                 <div class="glass-card p-6 rounded-2xl shadow-xl border-l-4 border-blue-500">
-                    <h2 class="text-lg font-semibold mb-4 text-white">1. Configuración</h2>
+                    <h2 class="text-lg font-semibold mb-4 text-white">1. Configuración del Emisor</h2>
                     <div class="space-y-4">
                         <div>
                             <label class="block text-xs font-medium text-slate-500 mb-1">Secret Key Emisor (S...)</label>
                             <input type="password" id="issuerSecret" placeholder="Tu llave secreta" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-500 mb-1">Tu Dominio</label>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Nombre de Organización</label>
+                            <input type="text" id="orgName" value="Skill Graph" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Tu Dominio (GitHub Pages)</label>
                             <input type="text" id="homeDomain" value="ernestocripto.github.io" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
-                            <button onclick="setHomeDomain()" class="w-full mt-2 bg-slate-700 hover:bg-slate-600 py-2 rounded-lg text-xs font-bold transition-all">Paso 1: Vincular Dominio</button>
+                            
+                            <div class="grid grid-cols-1 gap-2 mt-3">
+                                <button onclick="setFullProfile()" class="w-full bg-blue-600 hover:bg-blue-500 py-2 rounded-lg text-xs font-bold transition-all">
+                                    Paso A: Configurar Perfil Completo
+                                </button>
+                                <p class="text-[9px] text-slate-500 text-center italic">*Esto soluciona el "Not set by issuer" en LOBSTR</p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="glass-card p-4 rounded-2xl h-48 flex flex-col">
-                    <h3 class="text-xs font-bold text-emerald-400 uppercase mb-2">Logs</h3>
+                    <h3 class="text-xs font-bold text-emerald-400 uppercase mb-2">Logs de Red</h3>
                     <div id="console-output" class="font-mono text-[10px] text-emerald-500/80 flex-1 overflow-y-auto">
-                        > Listo para corregir el TOML.
+                        > Sistema listo.
                     </div>
                 </div>
             </div>
@@ -118,14 +128,14 @@
                         </div>
 
                         <button onclick="mintSBT()" id="mintBtn" class="stellar-gradient w-full py-3 rounded-lg font-bold text-white shadow-lg hover:brightness-110 transition-all">
-                            Paso 2: Emitir y Generar TOML Limpio
+                            Paso B: Emitir y Generar TOML Limpio
                         </button>
                     </div>
                 </div>
 
                 <!-- Bloque TOML -->
                 <div id="toml-helper" class="hidden glass-card p-6 rounded-2xl border-emerald-500/50 bg-emerald-950/20">
-                    <h3 class="text-emerald-400 font-bold text-sm mb-2">Paso 3: REEMPLAZA tu stellar.toml</h3>
+                    <h3 class="text-emerald-400 font-bold text-sm mb-2">Paso C: REEMPLAZA tu stellar.toml</h3>
                     <p class="text-[10px] text-slate-300 mb-2">Borra TODO el contenido de tu archivo actual en GitHub y pega esto:</p>
                     <div class="relative">
                         <div id="toml-code" class="code-block"></div>
@@ -137,7 +147,7 @@
             <!-- Panel Derecho -->
             <div class="lg:col-span-3 space-y-6">
                 <div class="glass-card p-6 rounded-2xl flex flex-col items-center">
-                    <h3 class="text-xs font-bold text-slate-400 uppercase mb-4 w-full">Vista Previa</h3>
+                    <h3 class="text-xs font-bold text-slate-400 uppercase mb-4 w-full text-left border-b border-slate-700 pb-2">Vista Previa</h3>
                     <div class="w-full aspect-square bg-slate-900 rounded-xl border border-slate-700 flex items-center justify-center overflow-hidden mb-4">
                         <img id="preview-img" class="w-full h-full object-contain p-2" src="https://raw.githubusercontent.com/ErnestoCripto/SkillGraph/main/assets/MKT101.png" alt="Preview">
                     </div>
@@ -145,12 +155,14 @@
                 </div>
 
                 <div class="bg-amber-900/20 border border-amber-800/50 p-4 rounded-xl">
-                    <h4 class="text-[11px] font-bold text-amber-400 uppercase mb-2">Checklist LOBSTR</h4>
-                    <ul class="text-[10px] text-slate-400 space-y-2">
-                        <li>✅ Repositorio Público</li>
-                        <li>✅ Archivo: <code class="text-white">.well-known/stellar.toml</code></li>
-                        <li>✅ Archivo: <code class="text-white">.nojekyll</code> (en la raíz)</li>
-                        <li>✅ Comillas rectas (") no curvas (“)</li>
+                    <h4 class="text-[11px] font-bold text-amber-400 uppercase mb-2">¿Por qué sigue sin verse?</h4>
+                    <p class="text-[10px] text-slate-400 leading-relaxed mb-2">
+                        LOBSTR necesita que el Emisor declare sus condiciones. El botón <strong>"Configurar Perfil Completo"</strong> añade:
+                    </p>
+                    <ul class="text-[9px] text-slate-500 space-y-1">
+                        <li>🔹 <strong>manageData:</strong> "conditions" (Para que no diga Not Set)</li>
+                        <li>🔹 <strong>manageData:</strong> "org" (Vínculo oficial)</li>
+                        <li>🔹 <strong>homeDomain:</strong> El enlace al TOML</li>
                     </ul>
                 </div>
             </div>
@@ -173,30 +185,39 @@
             document.getElementById('preview-name').innerText = document.getElementById('assetCode').value;
         }
 
-        async function setHomeDomain() {
+        // NUEVA FUNCIÓN: Configura TODO el perfil del emisor para evitar "Not set by issuer"
+        async function setFullProfile() {
             let secret = document.getElementById('issuerSecret').value.trim();
             let domain = document.getElementById('homeDomain').value.trim();
+            let org = document.getElementById('orgName').value.trim();
             domain = domain.replace(/^https?:\/\//, '').replace(/\/$/, '').split('/')[0].trim();
             
             if (!StellarSdk.StrKey.isValidEd25519SecretSeed(secret)) {
-                log("Error: Llave secreta inválida.", "error");
+                log("Error: Llave secreta necesaria.", "error");
                 return;
             }
 
             try {
-                log(`Vinculando dominio...`);
+                log(`Configurando perfil profesional...`);
                 const kp = StellarSdk.Keypair.fromSecret(secret);
                 const account = await server.loadAccount(kp.publicKey());
+                
                 const tx = new StellarSdk.TransactionBuilder(account, {
                     fee: StellarSdk.BASE_FEE,
                     networkPassphrase: StellarSdk.Networks.TESTNET
                 })
+                // 1. Vincular el dominio oficial del archivo TOML
                 .addOperation(StellarSdk.Operation.setOptions({ homeDomain: domain }))
+                // 2. Establecer metadatos fijos en la cuenta para LOBSTR
+                .addOperation(StellarSdk.Operation.manageData({ name: "org", value: org }))
+                .addOperation(StellarSdk.Operation.manageData({ name: "conditions", value: "SBT - Non Transferable Log" }))
                 .setTimeout(60).build();
+
                 tx.sign(kp);
                 await server.submitTransaction(tx);
-                log("¡Dominio vinculado en cadena!", "success");
-            } catch (e) { log(`Error: ${e.message}`, "error"); }
+                log("¡Perfil de Emisor actualizado con éxito!", "success");
+                log("Ahora LOBSTR reconocerá tu organización.");
+            } catch (e) { log(`Error de perfil: ${e.message}`, "error"); }
         }
 
         async function mintSBT() {
@@ -208,8 +229,10 @@
             const name = document.getElementById('eventName').value.trim();
             const desc = document.getElementById('eventDesc').value.trim();
             const domain = document.getElementById('homeDomain').value.trim();
+            const org = document.getElementById('orgName').value.trim();
 
             if (!StellarSdk.StrKey.isValidEd25519SecretSeed(secret)) { log("Llave secreta necesaria.", "error"); return; }
+            if (!receiver) { log("Llave pública del receptor necesaria.", "error"); return; }
 
             try {
                 btn.disabled = true;
@@ -217,7 +240,7 @@
                 const account = await server.loadAccount(kp.publicKey());
                 const asset = new StellarSdk.Asset(code, kp.publicKey());
 
-                log(`Emitiendo ${code}...`);
+                log(`Emitiendo activo ${code}...`);
                 const tx = new StellarSdk.TransactionBuilder(account, {
                     fee: StellarSdk.BASE_FEE,
                     networkPassphrase: StellarSdk.Networks.TESTNET
@@ -229,14 +252,15 @@
                 .setTimeout(60).build();
                 tx.sign(kp);
                 await server.submitTransaction(tx);
-                log("¡Emisión exitosa!", "success");
+                log("¡Insignia emitida!", "success");
 
-                // Generación de TOML limpio y profesional
+                // Generación de TOML optimizado
                 const tomlOutput = `HOME_DOMAIN = "${domain}"
 
 [DOCUMENTATION]
-ORG_NAME = "Skill Graph"
+ORG_NAME = "${org}"
 ORG_URL = "https://${domain}"
+ORG_DESCRIPTION = "Plataforma de emisión de insignias profesionales"
 
 [[CURRENCIES]]
 code = "${code}"
@@ -245,7 +269,7 @@ display_decimals = 0
 name = "${name}"
 desc = "${desc}"
 image = "${url}"
-conditions = "Insignia SBT no transferible"`;
+conditions = "Insignia SBT no transferible. Propiedad de Skill Graph."`;
 
                 document.getElementById('toml-code').innerText = tomlOutput;
                 document.getElementById('toml-helper').classList.remove('hidden');
@@ -262,7 +286,7 @@ conditions = "Insignia SBT no transferible"`;
             dummy.value = text; dummy.select();
             document.execCommand("copy");
             document.body.removeChild(dummy);
-            log("¡Código copiado!", "success");
+            log("¡Copiado! Ahora actualiza tu archivo en GitHub.", "success");
         }
     </script>
 </body>
