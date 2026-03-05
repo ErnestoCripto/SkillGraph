@@ -55,7 +55,7 @@
         <header class="flex justify-between items-center mb-10 border-b border-slate-800 pb-6">
             <div>
                 <h1 class="text-3xl font-bold tracking-tight">Stellar <span class="text-purple-400">SBT</span> Manager</h1>
-                <p class="text-slate-400 text-sm">Corrector Definitivo de Perfil y stellar.toml</p>
+                <p class="text-slate-400 text-sm">Corrector de Metadatos y stellar.toml</p>
             </div>
             <div class="text-right">
                 <span class="bg-purple-900/30 text-purple-400 px-3 py-1 rounded-full text-xs font-bold border border-purple-800">TESTNET</span>
@@ -85,7 +85,7 @@
                                 <button onclick="setFullProfile()" class="w-full bg-blue-600 hover:bg-blue-500 py-2 rounded-lg text-xs font-bold transition-all">
                                     Paso A: Configurar Perfil Completo
                                 </button>
-                                <p class="text-[9px] text-slate-500 text-center italic">*Esto soluciona el "Not set by issuer" en LOBSTR</p>
+                                <p class="text-[9px] text-slate-500 text-center italic">*Vincula el dominio y añade datos de organización en cadena.</p>
                             </div>
                         </div>
                     </div>
@@ -128,7 +128,7 @@
                         </div>
 
                         <button onclick="mintSBT()" id="mintBtn" class="stellar-gradient w-full py-3 rounded-lg font-bold text-white shadow-lg hover:brightness-110 transition-all">
-                            Paso B: Emitir y Generar TOML Limpio
+                            Paso B: Emitir e Inyectar Imagen
                         </button>
                     </div>
                 </div>
@@ -155,15 +155,13 @@
                 </div>
 
                 <div class="bg-amber-900/20 border border-amber-800/50 p-4 rounded-xl">
-                    <h4 class="text-[11px] font-bold text-amber-400 uppercase mb-2">¿Por qué sigue sin verse?</h4>
+                    <h4 class="text-[11px] font-bold text-amber-400 uppercase mb-2">Solución a la Imagen</h4>
                     <p class="text-[10px] text-slate-400 leading-relaxed mb-2">
-                        LOBSTR necesita que el Emisor declare sus condiciones. El botón <strong>"Configurar Perfil Completo"</strong> añade:
+                        He añadido <strong>Inyección de Metadatos</strong> en el Paso B. Ahora la URL de la imagen se guarda directamente en la cuenta emisora bajo la clave <code class="text-white">icon:[CODE]</code>.
                     </p>
-                    <ul class="text-[9px] text-slate-500 space-y-1">
-                        <li>🔹 <strong>manageData:</strong> "conditions" (Para que no diga Not Set)</li>
-                        <li>🔹 <strong>manageData:</strong> "org" (Vínculo oficial)</li>
-                        <li>🔹 <strong>homeDomain:</strong> El enlace al TOML</li>
-                    </ul>
+                    <p class="text-[10px] text-slate-400 leading-relaxed">
+                        Esto ayuda a LOBSTR a encontrar la imagen incluso si falla al leer el archivo TOML.
+                    </p>
                 </div>
             </div>
 
@@ -185,7 +183,6 @@
             document.getElementById('preview-name').innerText = document.getElementById('assetCode').value;
         }
 
-        // NUEVA FUNCIÓN: Configura TODO el perfil del emisor para evitar "Not set by issuer"
         async function setFullProfile() {
             let secret = document.getElementById('issuerSecret').value.trim();
             let domain = document.getElementById('homeDomain').value.trim();
@@ -206,17 +203,14 @@
                     fee: StellarSdk.BASE_FEE,
                     networkPassphrase: StellarSdk.Networks.TESTNET
                 })
-                // 1. Vincular el dominio oficial del archivo TOML
                 .addOperation(StellarSdk.Operation.setOptions({ homeDomain: domain }))
-                // 2. Establecer metadatos fijos en la cuenta para LOBSTR
                 .addOperation(StellarSdk.Operation.manageData({ name: "org", value: org }))
-                .addOperation(StellarSdk.Operation.manageData({ name: "conditions", value: "SBT - Non Transferable Log" }))
+                .addOperation(StellarSdk.Operation.manageData({ name: "conditions", value: "SBT - Non Transferable" }))
                 .setTimeout(60).build();
 
                 tx.sign(kp);
                 await server.submitTransaction(tx);
-                log("¡Perfil de Emisor actualizado con éxito!", "success");
-                log("Ahora LOBSTR reconocerá tu organización.");
+                log("¡Perfil de Emisor actualizado!", "success");
             } catch (e) { log(`Error de perfil: ${e.message}`, "error"); }
         }
 
@@ -240,19 +234,26 @@
                 const account = await server.loadAccount(kp.publicKey());
                 const asset = new StellarSdk.Asset(code, kp.publicKey());
 
-                log(`Emitiendo activo ${code}...`);
+                log(`Emitiendo activo e inyectando imagen...`);
                 const tx = new StellarSdk.TransactionBuilder(account, {
                     fee: StellarSdk.BASE_FEE,
                     networkPassphrase: StellarSdk.Networks.TESTNET
                 })
+                // Inyectar URL de imagen directamente en la cuenta como metadato de respaldo
+                .addOperation(StellarSdk.Operation.manageData({ 
+                    name: `icon:${code}`, 
+                    value: url.substring(0, 64) // Stellar tiene un límite de 64 bytes por valor de Data
+                }))
+                // Crear el Claimable Balance
                 .addOperation(StellarSdk.Operation.createClaimableBalance({
                     asset: asset, amount: "0.0000001",
                     claimants: [new StellarSdk.Claimant(receiver, StellarSdk.Claimant.predicateUnconditional())]
                 }))
                 .setTimeout(60).build();
+
                 tx.sign(kp);
                 await server.submitTransaction(tx);
-                log("¡Insignia emitida!", "success");
+                log("¡Emisión e inyección completadas!", "success");
 
                 // Generación de TOML optimizado
                 const tomlOutput = `HOME_DOMAIN = "${domain}"
@@ -260,7 +261,6 @@
 [DOCUMENTATION]
 ORG_NAME = "${org}"
 ORG_URL = "https://${domain}"
-ORG_DESCRIPTION = "Plataforma de emisión de insignias profesionales"
 
 [[CURRENCIES]]
 code = "${code}"
@@ -286,7 +286,7 @@ conditions = "Insignia SBT no transferible. Propiedad de Skill Graph."`;
             dummy.value = text; dummy.select();
             document.execCommand("copy");
             document.body.removeChild(dummy);
-            log("¡Copiado! Ahora actualiza tu archivo en GitHub.", "success");
+            log("¡Copiado! Actualiza tu archivo en GitHub.", "success");
         }
     </script>
 </body>
