@@ -1,5 +1,5 @@
 # Archivo de Configuracion Stellar - Catalogo de ernestocripto
-HOME_DOMAIN = "ernestocripto.github.io"
+HOME_DOMAIN = "skillgraphic.netlify.app"
 
 [[CURRENCIES]]
 code = "CRIPTO01"
