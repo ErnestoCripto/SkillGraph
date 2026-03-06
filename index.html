@@ -54,8 +54,8 @@
         <!-- Header -->
         <header class="flex justify-between items-center mb-10 border-b border-slate-800 pb-6">
             <div>
-                <h1 class="text-3xl font-bold tracking-tight">Skill Graph <span class="text-purple-400">SBT</span> Manager</h1>
-                <p class="text-slate-400 text-sm">Generador de Insignias Digitales</p>
+                <h1 class="text-3xl font-bold tracking-tight">Stellar <span class="text-purple-400">SBT</span> Manager</h1>
+                <p class="text-slate-400 text-sm">Corrector Definitivo de Imágenes y Metadatos</p>
             </div>
             <div class="text-right">
                 <span class="bg-purple-900/30 text-purple-400 px-3 py-1 rounded-full text-xs font-bold border border-purple-800">TESTNET</span>
@@ -74,7 +74,7 @@
                             <input type="password" id="issuerSecret" placeholder="Tu llave secreta" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-500 mb-1">Nombre del Organizador</label>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Nombre de Organización</label>
                             <input type="text" id="orgName" value="Skill Graph" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
                         </div>
                         <div>
@@ -119,6 +119,10 @@
                                 <label class="block text-xs font-medium text-slate-500 mb-1">Nombre</label>
                                 <input type="text" id="eventName" value="Marketing Digital" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white outline-none">
                             </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Descripción de la Insignia</label>
+                            <textarea id="eventDesc" rows="2" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white text-xs outline-none resize-none">Soulbound Token (SBT) - Skill Graph Verification</textarea>
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-slate-500 mb-1">URL Imagen (Usar HTTPS siempre)</label>
@@ -233,6 +237,7 @@
             const code = document.getElementById('assetCode').value.trim();
             const url = document.getElementById('imageUrl').value.trim();
             const name = document.getElementById('eventName').value.trim();
+            const desc = document.getElementById('eventDesc').value.trim();
             const domain = document.getElementById('homeDomain').value.trim();
 
             if (!StellarSdk.StrKey.isValidEd25519SecretSeed(secret)) { log("Llave secreta necesaria.", "error"); return; }
@@ -270,7 +275,7 @@
                 await server.submitTransaction(builtTx);
                 log("¡Emisión con metadatos triples exitosa!", "success");
 
-                // Generar TOML Correcto
+                // Generar TOML Correcto con la descripción personalizada
                 const tomlOutput = `# Archivo de Configuración Stellar
 HOME_DOMAIN = "${domain}"
 
@@ -280,7 +285,7 @@ issuer = "${kp.publicKey()}"
 display_decimals = 0
 name = "${name}"
 image = "${url}"
-desc = "Soulbound Token (SBT) - Skill Graph Verification"
+desc = "${desc}"
 conditions = "Non-transferable"`;
 
                 document.getElementById('toml-code').innerText = tomlOutput;
