@@ -1,4 +1,4 @@
-# Archivo de Configuración Stellar - Catálogo de ErnestoCripto
+# Archivo de Configuracion Stellar - Catalogo de ernestocripto
 HOME_DOMAIN = "ernestocripto.github.io"
 
 [[CURRENCIES]]
